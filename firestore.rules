@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // 共用設定：所有登入者可讀，只有管理者可改
+    match /config/{docId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // 巡檢紀錄：所有登入者可讀；只能新增／修改「自己」的紀錄；管理者可刪除
+    match /records/{recordId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.by == request.auth.uid;
+      allow update: if signedIn()
+                    && resource.data.by == request.auth.uid
+                    && request.resource.data.by == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // 管理者名單：只能在 Firebase 主控台手動建立；登入者只能讀自己的那一筆
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}
