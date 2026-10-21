@@ -253,7 +253,6 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
       <button id="historyBtn" class="secondary" type="button">🕘 歷史紀錄</button>
       <button id="syncBtn" class="secondary" type="button">📦 備份／同步</button>
       <button id="earBtn" class="secondary" type="button">🎧 耳機按鍵：關</button>
-      <button id="shiftBtn" class="secondary" type="button" onclick="location.href='schedule/'">📅 班表小幫手</button>
     </div>
     <div id="message" class="status" style="margin-top:10px">準備完成。</div>
   </section>
@@ -1766,7 +1765,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v46（2026-10-21）';
+const APP_VER='v47（2026-10-21）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -2084,7 +2083,6 @@ const HELP=[
 <li><b>🔍 檢查漏填</b>：列出各分頁還沒填的項目，點一下會跳到那一列；「從漏填處開始報數」可以直接接著報。</li>
 <li><b>🕘 歷史紀錄</b>：每次儲存都會留下，可以「載入」回表格查看；多人共用時會標示儲存者。</li>
 <li><b>📊 匯出 CSV</b>：把目前分頁下載成 CSV。<b>清除本次讀值</b>：清空目前分頁的實際值（已儲存的紀錄不受影響）。</li>
-<li><b>📅 班表小幫手</b>：開啟月曆班表（日班／夜班／休假、排班循環、分享圖片）。也可以直接在網址後面加 <code>/schedule/</code> 開啟，並另外加入主畫面。</li>
 </ul>`],
 ['9　備份與多人共用',`<ul>
 <li>「⋯ 更多功能 → 📦 備份／同步」會顯示雲端連線狀態、App 版本，以及「共用設定最後更新」的時間。</li>

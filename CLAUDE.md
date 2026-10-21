@@ -10,7 +10,6 @@ iPhone 用的夜班抄表網頁 App。純靜態網站，沒有建置步驟，部
 - `firestore.rules`：Firestore 權限規則（要到 Firebase 後台貼上才會生效）。
 - `netlify.toml`：Netlify 設定（index.html／sw.js 不快取）。
 - `docs/`：Firebase 設定說明、共用設定備份。
-- `schedule/`：另一個獨立 App「班表小幫手」（月曆班表，資料存在手機 localStorage）。網址 `/schedule/`，有自己的 `manifest.json`、`sw.js`（`CACHE` 為 `shift-helper-vN`）、圖示；版本號 `APP_VER` 在 `schedule/index.html`。
 
 ## 每次修改的規則
 1. 改 `index.html` 裡的 `const APP_VER='vNN（YYYY-MM-DD）';`，版本號加 1。
