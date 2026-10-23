@@ -91,15 +91,6 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
 .history-item{border-top:1px solid #e5e7eb;padding:10px 0}
 .history-item:first-child{border-top:0}
 .hidden{display:none!important}
-#scanCard{position:fixed;inset:0;z-index:200;background:#020617;color:#fff;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-#scanView{position:relative;flex:0 0 44vh;overflow:hidden;background:#000}#scanVideo{width:100%;height:100%;object-fit:cover;display:block}
-#scanFrame{position:absolute;left:4%;width:92%;top:50%;transform:translateY(-50%);aspect-ratio:900/228;border:3px solid #facc15;border-radius:10px;box-shadow:0 0 0 2000px rgba(0,0,0,.35);pointer-events:none}
-#scanFrame.hit{border-color:#22c55e}#scanHint{position:absolute;left:8px;right:8px;top:8px;text-align:center;font-size:13px;color:#fde68a;text-shadow:0 1px 2px #000}
-#scanPanel{flex:1;overflow:auto;padding:8px 10px;-webkit-overflow-scrolling:touch}
-#scanStat{font-size:17px;font-weight:700;min-height:26px}#scanWork{width:100%;max-width:300px;display:block;margin:6px 0;border-radius:6px;background:#111}
-.scanRow{display:flex;gap:8px;align-items:center;padding:7px 8px;margin:4px 0;border-radius:10px;background:#1e293b;font-size:14px}.scanRow b{flex:0 0 auto;font-size:15px}.scanRow span{flex:1;min-width:0}.scanRow em{font-style:normal;font-weight:700;font-size:16px;white-space:nowrap}
-.scanRow.ok{background:#14532d}.scanRow.warn{background:#713f12}
-#scanBtns{display:flex;gap:8px;padding:8px 10px;align-items:center}#scanBtns button{flex:1;min-width:0}#scanZoom{flex:2;min-width:0;padding:0;border:0;background:transparent}
 .notice{font-size:13px;line-height:1.5;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:10px;color:#9a3412}
 @media(max-width:600px){main{padding-left:var(--px,2px);padding-right:var(--px,2px)}.card{padding:10px calc(var(--px,2px) + 4px)}header{padding-left:10px;padding-right:10px}.actions{display:grid;grid-template-columns:1fr 1fr}.actions button{width:100%}}
 </style>
@@ -191,7 +182,6 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
     <div class="row vbtns" style="margin-top:10px">
       <button id="guideBtn" class="primary" type="button">📋 逐項報數</button>
       <button id="fillBtn" class="primary" type="button">自動填入表格</button>
-      <button id="scanBtn" class="primary" type="button">📷 掃描電表</button>
       <span id="voiceStatus" class="status grow">等待輸入</span>
     </div>
     <details class="colctl vnote"><summary>ℹ️ 使用說明（完整版在「⋯ 更多功能 → 📖 使用說明」）</summary><div class="notice" style="margin-top:10px">
@@ -355,12 +345,6 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
   </section>
 </main>
 
-<div id="scanCard" class="hidden">
-  <div id="scanView"><video id="scanVideo" playsinline muted autoplay></video><div id="scanFrame"></div><div id="scanHint">把電表液晶的灰色窗框對齊黃色框，手機拿穩，等它自己跳頁</div></div>
-  <div id="scanPanel"><div id="scanStat">啟動相機中…</div><canvas id="scanWork" width="900" height="228"></canvas><div id="scanList"></div>
-    <div class="small" style="color:#94a3b8;margin-top:6px">看到項目名稱裡「代碼NN」的頁碼，連續 3 次讀到相同數值才會填入；已經有值的項目不會被覆蓋。陰影或反光讓數字看不清楚時不會填，請換個角度或用手電筒斜照。</div></div>
-  <div id="scanBtns"><button id="scanTorch" class="secondary hidden" type="button">🔦 補光</button><input id="scanZoom" class="hidden" type="range"><button id="scanClose" class="danger" type="button">✕ 關閉相機</button></div>
-</div>
 <div id="numBar" class="hidden"><button id="nbPrev" class="secondary" type="button">◀ 上一格</button><button id="nbDrag" type="button" title="按住上下拖曳可調整位置，連點兩下還原">↕</button><span id="nbInfo"></span><span id="rvBox" class="hidden"><button id="rvUp" class="secondary" type="button">▲ 上移</button><button id="rvDown" class="secondary" type="button">▼ 下移</button><button id="rvReset" class="secondary" type="button">還原<small id="rvVal">0</small></button></span><button id="nbFine" class="hidden" type="button" title="微調自動捲動的位置">🎯</button><button id="nbNext" class="primary" type="button">確定 ▶</button><div id="rvHint" class="hidden"></div></div>
 <script>
 const KEY_ITEMS='wasteInspectionItemsV1';
@@ -1781,7 +1765,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v46（2026-10-23）';
+const APP_VER='v45（2026-10-21）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -2044,222 +2028,6 @@ $('autoFineBtn').addEventListener('click',()=>{
 $('nbPosSel').value=nbPosMode;
 $('nbPosSel').addEventListener('change',()=>{nbPosMode=$('nbPosSel').value;lsSet('wasteInspectionNbPos',nbPosMode);nbSettle(800);});
 noAutofill(document);
-// ===== 📷 掃描電表：辨識中興 FITZALL 電子式電表的七段液晶（頁碼 2 位＋數值 6 位） =====
-// ==SCAN-DECODER==
-const SC={W:900,H:228,T:0.10,
-  VAL:{L:[0.306,0.407,0.511,0.614,0.717,0.818],W:0.0573,top:0.156,bot:0.670,sl:0.0084},
-  COD:{L:[0.191,0.247],W:0.031,top:0.170,bot:0.453,sl:0.0036}};
-// 筆畫順序：上、右上、右下、下、左下、左上、中
-const SC_DIG={'1111110':'0','0110000':'1','1101101':'2','1111001':'3','0110011':'4','1011011':'5','1011111':'6','1110000':'7','1111111':'8','1111011':'9','0000000':' ','0011111':'6','1110010':'7','1110011':'9'};
-function scMaps(g){   // 每個點「比左右（或上下）暗多少」的比例，再取 7×7 範圍內最大值（容許些微偏移）
-  const W=SC.W,H=SC.H,r=2,d=8,j=3,N=W*H;
-  const ii=new Float64Array((W+1)*(H+1));
-  for(let y=0;y<H;y++){let row=0;for(let x=0;x<W;x++){row+=g[y*W+x];ii[(y+1)*(W+1)+x+1]=ii[y*(W+1)+x+1]+row;}}
-  const m=new Float32Array(N);
-  for(let y=0;y<H;y++){const y0=Math.max(0,y-r),y1=Math.min(H,y+r+1);for(let x=0;x<W;x++){const x0=Math.max(0,x-r),x1=Math.min(W,x+r+1);
-    m[y*W+x]=(ii[y1*(W+1)+x1]-ii[y0*(W+1)+x1]-ii[y1*(W+1)+x0]+ii[y0*(W+1)+x0])/((x1-x0)*(y1-y0));}}
-  const cv=new Float32Array(N),ch=new Float32Array(N);
-  for(let y=0;y<H;y++){const yu=Math.max(0,y-d),yd=Math.min(H-1,y+d);for(let x=0;x<W;x++){const i=y*W+x,c=m[i];
-    const nv=Math.min(m[y*W+Math.max(0,x-d)],m[y*W+Math.min(W-1,x+d)]),nh=Math.min(m[yu*W+x],m[yd*W+x]);
-    cv[i]=(nv-c)/Math.max(20,nv);ch[i]=(nh-c)/Math.max(20,nh);}}
-  const mx=a=>{const t=new Float32Array(N),o=new Float32Array(N);
-    for(let y=0;y<H;y++)for(let x=0;x<W;x++){let v=-1e9;for(let k=Math.max(0,x-j);k<=Math.min(W-1,x+j);k++)v=Math.max(v,a[y*W+k]);t[y*W+x]=v;}
-    for(let y=0;y<H;y++)for(let x=0;x<W;x++){let v=-1e9;for(let k=Math.max(0,y-j);k<=Math.min(H-1,y+j);k++)v=Math.max(v,t[k*W+x]);o[y*W+x]=v;}
-    return o;};
-  return [mx(cv),mx(ch)];
-}
-function scSeg(g,i,t){
-  const [ox,oy,sx,sy]=t,L=(g.L[i]+ox)*sx,W=g.W*sx,top=(g.top+oy)*sy,bot=(g.bot+oy)*sy,sl=g.sl*sx,h=bot-top;
-  return [[L+W/2,top,0],[L+W-sl*.25,top+.25*h,1],[L+W-sl*.75,top+.75*h,1],[L+W/2-sl,bot,0],[L-sl*.75,top+.75*h,1],[L-sl*.25,top+.25*h,1],[L+W/2-sl/2,top+.5*h,0]].map(p=>[p[0]*SC.W,p[1]*SC.H,p[2]]);
-}
-function scLook(M,x,y){x=Math.trunc(x);y=Math.trunc(y);return M[Math.min(SC.H-1,Math.max(0,y))*SC.W+Math.min(SC.W-1,Math.max(0,x))];}
-function scKey(c){let k='';for(const v of c)k+=v>SC.T?'1':'0';return k;}
-function scCellScore(c){
-  const T=SC.T;let mn=1e9,mx=-1e9,n=0;
-  for(const v of c){if(v>T){n++;if(v<mn)mn=v;}else if(v>mx)mx=v;}
-  if(!(scKey(c) in SC_DIG))return -0.05;
-  if(!n)return 0;
-  return mn-(n<7?mx:0)+0.03*n;
-}
-const SC_LOCAL=[[[-8,-6,-4,-2,0,2,4,6,8],[-6,-3,0,3,6]],[[-4,-2,0,2,4],[-3,0,3]],[[-6,-4,-2,0,2,4,6],[-3,0,3]]];
-function scCells(MV,MH,t,coarse,lv){   // lv：每一位數自己微調的範圍（3 組，用來交叉驗證）
-  const L=SC_LOCAL[lv||0],out=[],dxs=coarse?[-8,-4,0,4,8]:L[0],dys=coarse?[-6,0,6]:L[1];
-  for(const g of [SC.COD,SC.VAL])for(let i=0;i<g.L.length;i++){
-    const P=scSeg(g,i,t);let best=null;
-    for(const dx of dxs)for(const dy of dys){
-      const c=P.map(p=>scLook(p[2]?MV:MH,p[0]+dx,p[1]+dy)),s=scCellScore(c);
-      if(!best||s>best.s)best={s,c,o:[dx,dy]};
-    }
-    out.push(best);
-  }
-  return out;
-}
-function scSum(cs){let s=0;for(const c of cs)s+=c.s;return s;}
-function scDecode(g){   // g：900×228 灰階。回傳 {code, chars[6], dps[5], ok, val}
-  const [MV,MH]=scMaps(g);
-  let best=null;
-  for(let a=-6;a<=6;a++)for(let b=-4;b<=4;b++)for(const sx of [0.92,0.96,1,1.04,1.08])for(const sy of [0.9,0.95,1,1.05,1.1]){
-    const t=[a*0.01,b*0.025,sx,sy],s=scSum(scCells(MV,MH,t,true));
-    if(!best||s>best.s)best={s,t};
-  }
-  let {s,t}=best;
-  for(let it=0;it<2;it++)for(const [k,st] of [[0,.008],[1,.015],[2,.02],[3,.03]])for(const dl of [-st,st,-st/2,st/2]){
-    const t2=t.slice();t2[k]+=dl;const s2=scSum(scCells(MV,MH,t2,false));
-    if(s2>s){s=s2;t=t2;}
-  }
-  const read=lv=>{const c=scCells(MV,MH,t,false,lv);return {cs:c,ch:c.map(x=>SC_DIG[scKey(x.c)]??'?')};};
-  const R=[0,1,2].map(read),cs=R[0].cs,ch=R[0].ch;
-  const stable=R.every(x=>x.ch.join('')===ch.join(''));   // 3 種微調範圍讀到的字要完全一樣
-  const V=SC.VAL,dps=[];
-  for(let i=0;i<5;i++){
-    const o1=cs[2+i].o,o2=cs[3+i].o;
-    const x=((V.L[i]+V.L[i+1])/2+V.W/2+t[0])*t[2]-V.sl*t[2],y=(V.bot+t[1])*t[3];
-    dps.push(scLook(MH,x*SC.W+(o1[0]+o2[0])/2,y*SC.H+(o1[1]+o2[1])/2)>SC.T);
-  }
-  const br=[0,1,2,3,4,5].map(i=>scBright(g,i,t)),med=br.slice().sort((a,b)=>a-b)[3];
-  const dark=br.map(v=>v<0.4*med);   // 這一位比其他位暗很多＝在陰影裡，陰影會讓筆畫消失（例如 9 被讀成 7）
-  const code=ch[0]+ch[1],chars=ch.slice(2);
-  const res=Object.assign({code,chars,dps,dark},scCheck(code,chars,dps,dark));
-  if(res.ok&&!stable)return Object.assign(res,{ok:false,why:'unstable',val:undefined});
-  return res;
-}
-function scBright(g,i,t){   // 數字格範圍內第 80 百分位的亮度（背景亮度）
-  const P=scSeg(SC.VAL,i,t),xs=P.map(p=>p[0]),ys=P.map(p=>p[1]),a=[];
-  const x0=Math.max(0,Math.trunc(Math.min(...xs))),x1=Math.min(SC.W-1,Math.trunc(Math.max(...xs))),y0=Math.max(0,Math.trunc(Math.min(...ys))),y1=Math.min(SC.H-1,Math.trunc(Math.max(...ys)));
-  for(let y=y0;y<=y1;y+=2)for(let x=x0;x<=x1;x+=2)a.push(g[y*SC.W+x]);
-  if(!a.length)return 0;
-  a.sort((p,q)=>p-q);return a[Math.floor(a.length*0.8)];
-}
-function scCheck(code,chars,dps,dark){   // 安全規則：頁碼要 2 位數字；數值靠右對齊、中間不能有空位、認不出的數字或陰影
-  if(!/^\d\d$/.test(code))return {ok:false,why:'nocode'};
-  const k=chars.findIndex(c=>c!==' ');
-  if(k<0)return {ok:false,why:'noval'};
-  if(dark&&dark.some((d,i)=>d&&i>=k))return {ok:false,why:'dark'};
-  if(dark&&dark[5])return {ok:false,why:'dark'};
-  let v='',nd=0;
-  for(let i=k;i<6;i++){
-    if(!/\d/.test(chars[i]))return {ok:false,why:'unclear'};
-    v+=chars[i];
-    if(i<5&&dps[i]){v+='.';nd++;}
-  }
-  if(nd>1)return {ok:false,why:'unclear'};
-  return {ok:true,val:v.replace(/^0+(?=\d)/,'')};
-}
-// ==/SCAN-DECODER==
-let sc={on:false};
-function scTargets(){
-  const out=[];
-  items.forEach(r=>{
-    if(isHiddenCat(r))return;
-    const m=String(r[0]).match(/代碼\s*0*(\d{1,3})/);
-    if(m)out.push({code:m[1].padStart(2,'0'),name:r[0],st:'',msg:''});
-  });
-  return out;
-}
-function scRowOf(t){return items.find(r=>r[0]===t.name);}
-function scRenderList(){
-  $('scanList').innerHTML=sc.targets.map(t=>{
-    const r=scRowOf(t),v=r?String(r[3]).trim():'',pv=r?prevMap[r[0]]:undefined;
-    const cls=t.st==='warn'?'warn':(v!==''?'ok':'');
-    return `<div class="scanRow ${cls}"><b>${esc(t.code)}</b><span>${esc(t.name.replace(/\(?代碼\s*\d+\)?/,'').trim())}${pv!==undefined?'<br><small style="color:#94a3b8">上次 '+esc(pv)+'</small>':''}${t.msg?'<br><small style="color:#fde68a">'+esc(t.msg)+'</small>':''}</span><em>${v!==''?'✅ '+esc(v):'等待中'}</em></div>`;
-  }).join('');
-}
-function scSetStat(m){$('scanStat').textContent=m;}
-async function scanOpen(){
-  collectRows();
-  const tg=scTargets();
-  if(!tg.length){$('message').textContent='目前分頁沒有名稱含「代碼NN」的項目，無法對應電表頁碼。請在項目名稱加上例如「(代碼09)」。';return;}
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('message').textContent='這個環境不能使用相機，請用 Safari 開啟網站或從主畫面圖示開啟。';return;}
-  sc={on:true,targets:tg,lastKey:'',cnt:0,busy:false,timer:0,lastAct:Date.now(),stream:null,track:null,wake:null};
-  $('scanCard').classList.remove('hidden');document.body.style.overflow='hidden';
-  scRenderList();scSetStat('啟動相機中…');
-  try{
-    const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
-    if(!sc.on){st.getTracks().forEach(x=>x.stop());return;}
-    sc.stream=st;sc.track=st.getVideoTracks()[0];
-    const v=$('scanVideo');v.srcObject=st;try{await v.play();}catch(e){}
-    scSetupCaps();
-    try{if(navigator.wakeLock)sc.wake=await navigator.wakeLock.request('screen');}catch(e){}
-    scSetStat('尋找頁碼中…');scLoop();
-  }catch(e){
-    scSetStat('❌ 無法開啟相機：'+(e&&e.name==='NotAllowedError'?'沒有相機權限（請到 設定→Safari→相機 允許）':(e&&e.message||e))+(EMBED?'。在 claude.ai 裡可能不能用相機，請改從網站或主畫面圖示開啟。':''));
-  }
-}
-function scSetupCaps(){
-  const caps=sc.track&&sc.track.getCapabilities?sc.track.getCapabilities():{};
-  $('scanTorch').classList.toggle('hidden',!caps.torch);$('scanTorch').textContent='🔦 補光';sc.torchOn=false;
-  const z=$('scanZoom');
-  if(caps.zoom&&caps.zoom.max>caps.zoom.min){
-    z.min=caps.zoom.min;z.max=Math.min(caps.zoom.max,6);z.step=caps.zoom.step||0.1;
-    const cur=sc.track.getSettings?sc.track.getSettings().zoom:caps.zoom.min;z.value=cur||caps.zoom.min;z.classList.remove('hidden');
-  }else z.classList.add('hidden');
-}
-function scanClose(msg){
-  if(!sc.on&&$('scanCard').classList.contains('hidden'))return;
-  sc.on=false;clearTimeout(sc.timer);
-  if(sc.stream)sc.stream.getTracks().forEach(x=>x.stop());
-  try{if(sc.wake)sc.wake.release();}catch(e){}
-  $('scanVideo').srcObject=null;$('scanCard').classList.add('hidden');document.body.style.overflow='';
-  const n=(sc.targets||[]).filter(t=>{const r=scRowOf(t);return r&&String(r[3]).trim()!=='';}).length;
-  $('message').textContent=(msg?msg+' ':'')+'掃描電表：代碼項目已填 '+n+'／'+(sc.targets||[]).length+' 項，請檢查後再儲存。';
-}
-function scFrameBox(){   // 黃色框在影片畫面中的位置（像素）
-  const v=$('scanVideo'),vw=v.videoWidth,vh=v.videoHeight;if(!vw||!vh)return null;
-  const er=v.getBoundingClientRect(),fr=$('scanFrame').getBoundingClientRect();
-  const k=Math.max(er.width/vw,er.height/vh),ox=(er.width-vw*k)/2,oy=(er.height-vh*k)/2;
-  const b=3;   // 框線寬度
-  return [(fr.left+b-er.left-ox)/k,(fr.top+b-er.top-oy)/k,(fr.width-2*b)/k,(fr.height-2*b)/k];
-}
-function scGrab(){
-  const bx=scFrameBox();if(!bx)return null;
-  const cv=$('scanWork'),cx=sc.ctx||(sc.ctx=cv.getContext('2d',{willReadFrequently:true}));
-  cx.drawImage($('scanVideo'),bx[0],bx[1],bx[2],bx[3],0,0,SC.W,SC.H);
-  const d=cx.getImageData(0,0,SC.W,SC.H).data,g=new Float32Array(SC.W*SC.H);
-  for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=0.299*d[j]+0.587*d[j+1]+0.114*d[j+2];
-  return g;
-}
-function scLoop(){
-  if(!sc.on)return;
-  if(Date.now()-sc.lastAct>300000){scanClose('5 分鐘沒有新數值，已自動關閉相機（省電）。');return;}
-  const v=$('scanVideo');
-  if(v.readyState>=2&&!document.hidden){
-    try{const g=scGrab();if(g)scHandle(scDecode(g));}catch(e){scSetStat('辨識錯誤：'+e.message);}
-  }
-  sc.timer=setTimeout(scLoop,80);
-}
-function scHandle(res){
-  const key=res.ok?res.code+'|'+res.val:'';
-  if(key&&key===sc.lastKey)sc.cnt++;else{sc.lastKey=key;sc.cnt=key?1:0;}
-  $('scanFrame').classList.toggle('hit',!!key);
-  if(!res.ok){scSetStat(res.why==='nocode'?'尋找頁碼中…':res.why==='dark'?'頁碼 '+res.code+'：數字有一部分在陰影裡，請補光或換角度':'頁碼 '+res.code+'：數值看不清楚（陰影／反光？）');return;}
-  const t=sc.targets.find(x=>x.code===res.code);
-  if(!t){scSetStat('頁碼 '+res.code+'：'+res.val+'（不是要抄的頁，略過）');return;}
-  if(sc.cnt<3){scSetStat('頁碼 '+res.code+'：'+res.val+'　確認中 '+sc.cnt+'/3');return;}
-  if(sc.cnt===3)scCommit(t,res.val);
-}
-function scCommit(t,val){
-  const r=scRowOf(t);if(!r)return;
-  const cur=String(r[3]).trim(),pv=prevMap[r[0]],n=Number(val),p=Number(pv);
-  const idig=x=>String(Math.trunc(Math.abs(x))).length;
-  if(cur===val){t.st='';t.msg='';scSetStat('頁碼 '+t.code+'：'+val+'（已填過）');scRenderList();return;}
-  if(cur!==''){t.st='warn';t.msg='表格已有 '+cur+'，掃到 '+val+'（沒有覆蓋）';}
-  else if(pv!==undefined&&String(pv).trim()!==''&&Number.isFinite(p)&&String(r[2]).trim()==='>'&&n<p){t.st='warn';t.msg='掃到 '+val+' 比上次 '+pv+' 小，沒有填入';}
-  else if(pv!==undefined&&Number.isFinite(p)&&p!==0&&Math.abs(idig(n)-idig(p))>1){t.st='warn';t.msg='掃到 '+val+'，位數和上次 '+pv+' 差太多，沒有填入';}
-  else{
-    r[3]=val;t.st='';t.msg='';saveItems();render();sc.lastAct=Date.now();
-    beep(1320,150);if(navigator.vibrate)navigator.vibrate(80);
-  }
-  scRenderList();
-  const left=sc.targets.filter(x=>{const rr=scRowOf(x);return rr&&String(rr[3]).trim()==='';}).length;
-  scSetStat(t.st==='warn'?'⚠️ 頁碼 '+t.code+'：'+t.msg:(left?'✅ 頁碼 '+t.code+' 已填入 '+val+'，繼續掃描（還有 '+left+' 項）':'✅ 全部代碼項目都填好了，可以關閉相機'));
-}
-$('scanBtn').addEventListener('click',scanOpen);
-$('scanClose').addEventListener('click',()=>scanClose());
-$('scanTorch').addEventListener('click',async()=>{
-  try{sc.torchOn=!sc.torchOn;await sc.track.applyConstraints({advanced:[{torch:sc.torchOn}]});$('scanTorch').textContent=sc.torchOn?'🔦 補光：開':'🔦 補光';}catch(e){sc.torchOn=false;}
-});
-$('scanZoom').addEventListener('input',e=>{try{sc.track.applyConstraints({advanced:[{zoom:Number(e.target.value)}]});}catch(err){}});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&sc.on)scanClose('App 切到背景，相機已關閉。');});
 const HELP=[
 ['1　快速開始',`<ul>
 <li>打開後先選上方的<b>分頁</b>（例如 P1、P2），日期預設是今天。</li>
@@ -2293,46 +2061,37 @@ const HELP=[
 <li><b>🔧 語音診斷</b>（語音區的「ℹ️ 使用說明」裡）：測試麥克風、重設語音、更換辨識語言。</li>
 </ul>
 <div class="note">iPhone 請用 Safari 開啟，並確認「設定→一般→鍵盤→啟用聽寫」和 Siri 已開啟。從主畫面圖示、LINE 內建瀏覽器或 claude.ai 連結內開啟時，語音常不能用，可改用鍵盤上的麥克風。</div>`],
-['5　📷 掃描電表（電子式電表自動讀值）',`<ul>
-<li>按語音區的「<b>📷 掃描電表</b>」開啟相機。App 會找目前分頁裡名稱有「<b>代碼NN</b>」的項目，例如「總用電度數(代碼09)」，電表跳到第 09 頁時就把數值填進這一項。</li>
-<li>把電表液晶的<b>灰色窗框對齊黃色框</b>，手機拿穩，等電表自己跳頁。不是要抄的頁會略過；填好一項會「嗶」一聲，相機不關，繼續等下一頁。</li>
-<li>同一頁要<b>連續 3 次讀到相同數值</b>才會填入。下面的清單顯示每個代碼的狀態：綠色＝已填、黃色＝有問題沒填（會寫原因）。</li>
-<li>不會填入的情況：數字被陰影或反光擋住、表格<b>已經有值</b>（不會覆蓋）、累計值（標準「&gt;」）比上次小、位數和上次差太多。</li>
-<li>全部填好或按「✕ 關閉相機」就結束；5 分鐘沒有新數值、或切到其他 App，相機會自動關閉。</li>
-<li>有「🔦 補光」或縮放滑桿時（看手機是否支援），可以用來改善光線、拉近畫面。</li>
-</ul>
-<div class="note">目前是依「中興電工 FITZALL 電子式電表」的液晶設計的，其他型號的電表可能讀不到。自動填入後<b>請對照電表確認數值</b>再儲存。液晶右邊常被電表蓋的陰影擋住，請換角度，或用另一支手電筒斜照（不要正對液晶，會反光）。第一次使用時 iPhone 會詢問相機權限，請按「允許」；在 claude.ai 裡開啟可能不能用相機，請從網站或主畫面圖示開啟。</div>`],
-['6　分頁與項目管理',`<ul>
+['5　分頁與項目管理',`<ul>
 <li>點分頁名稱切換；「＋ 新增分頁」可複製目前分頁的項目；「⚙ 管理分頁」可重新命名或刪除。</li>
 <li>「＋ 新增項目」會加一列；項目名稱、標準、類別都可以直接修改。</li>
 <li>刪除項目、調整順序：先到「⚙ 表格設定 → 顯示欄位」打開「<b>操作</b>」和「<b>選取／拖曳</b>」。刪除要按兩次確認；按住 <b>☰</b> 上下拖曳排序，也可以先勾選多個項目一起拖曳，或按「移到最上／最下」。</li>
 <li>這兩欄預設是隱藏的，避免誤觸；用完可以再關掉。</li>
 </ul>`],
-['7　類別、顯示與欄寬',`<ul>
+['6　類別、顯示與欄寬',`<ul>
 <li>「⚙ 表格設定」：<b>顯示欄位</b>（只影響目前分頁，點一下隱藏或顯示整欄）、<b>顯示類別</b>（隱藏的類別不會出現在表格、逐項報數和漏填檢查，資料仍保留）、依類別排列。</li>
 <li>「🏷 編輯類別」：新增、改名、換顏色、調順序、刪除；<b>每個分頁各自獨立</b>。</li>
 <li>「↔ 調整欄位寬度」：調整類別、項目、標準、實際值、前次值的寬度；「左右邊界」調小可讓表格更寬，只影響這台裝置。</li>
 </ul>`],
-['8　抄表排版（手抄單）',`<ul>
+['7　抄表排版（手抄單）',`<ul>
 <li>「⋯ 更多功能 → 🖨 抄表排版」：依類別分區的表格，欄位有項次、巡檢項目、標準、前次值、實際值、備註，可以列印後手寫。</li>
 <li>勾選「<b>帶入已輸入的實際值</b>」會把已輸入的數值印出來；不勾選就是空白手抄單。</li>
 <li>可選「目前分頁」或「全部分頁」。「⚙ 抄表單設定」可以隱藏類別或欄位、調整欄寬和列高，也能還原順序。</li>
 <li>勾選「<b>顯示拖曳／選取欄</b>」後，可以在抄表單裡拖曳排序（只影響抄表單，不影響主表格）。</li>
 <li>列印沒反應時，用「⬇ 下載抄表單」，用瀏覽器開啟後再列印。</li>
 </ul>`],
-['9　檢查漏填、歷史與匯出',`<ul>
+['8　檢查漏填、歷史與匯出',`<ul>
 <li><b>🔍 檢查漏填</b>：列出各分頁還沒填的項目，點一下會跳到那一列；「從漏填處開始報數」可以直接接著報。</li>
 <li><b>🕘 歷史紀錄</b>：每次儲存都會留下，可以「載入」回表格查看；多人共用時會標示儲存者。</li>
 <li><b>📊 匯出 CSV</b>：把目前分頁下載成 CSV。<b>清除本次讀值</b>：清空目前分頁的實際值（已儲存的紀錄不受影響）。</li>
 </ul>`],
-['10　備份與多人共用',`<ul>
+['9　備份與多人共用',`<ul>
 <li>「⋯ 更多功能 → 📦 備份／同步」會顯示雲端連線狀態、App 版本，以及「共用設定最後更新」的時間。</li>
 <li>登入雲端後，管理者改的設定（項目、類別、欄位、順序）會自動同步給大家；每個人儲存的數值也會互相看得到，並成為「前次值」的來源。</li>
 <li>一般使用者只能儲存自己的數值，不能改共用設定。</li>
 <li>「匯出設定檔」「複製設定文字」可以備份，或搬到別台裝置；<b>匯入會覆蓋這台裝置的設定</b>，匯入前請先儲存。</li>
 <li>資料預設只存在這台裝置的瀏覽器；清除瀏覽器的網站資料，會遺失尚未同步的內容。</li>
 </ul>`],
-['11　常見問題',`<ul>
+['10　常見問題',`<ul>
 <li><b>畫面看起來是舊的？</b>打開「備份／同步」看 App 版本。版本舊：把 App 關掉重開兩次。版本新但排版舊：看「共用設定最後更新」是不是舊時間，請管理者重新上傳設定。</li>
 <li><b>語音沒反應？</b>照「語音填表」的提醒檢查，或用「🔧 語音診斷」測試麥克風。</li>
 <li><b>鍵盤上面跳出「密碼」建議或網址？</b>這是 iPhone 的密碼自動填入，可到「設定→密碼→密碼選項」關閉。</li>
