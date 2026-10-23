@@ -43,10 +43,8 @@ table{min-width:0!important;width:auto!important}
 .gbox.gmin .gx{display:none}
 .gbtns{display:flex;gap:6px;margin-top:6px}.gbtns button{flex:1;min-width:0;padding:8px 4px;min-height:42px}.gbtns .voice{min-width:0}
 #voiceCard.pinned{position:sticky;top:calc(var(--hh,70px) + 6px);z-index:9;max-height:calc(100vh - var(--hh,70px) - 16px);max-height:calc(100dvh - var(--hh,70px) - 16px);overflow:auto;box-shadow:0 4px 14px rgba(0,0,0,.18)}
-#voiceCard textarea{min-height:48px;height:48px}
-#voiceCard .vrow label,#voiceCard .vrow .small{display:none}#voiceCard .vrow>div:last-child{min-width:0!important}
 #voiceCard .vbtns{margin-top:6px!important;gap:6px}#voiceCard .vbtns button{flex:1;min-width:0;padding:8px 4px;min-height:40px;font-size:14px}#voiceCard .vbtns .status{flex:0 0 100%;padding:5px 9px}
-#voiceCard.guiding .vhead,#voiceCard.guiding .vrow,#voiceCard.guiding .vbtns,#voiceCard.guiding .vnote{display:none}
+#voiceCard.guiding .vhead,#voiceCard.guiding .vbtns,#voiceCard.guiding .vnote{display:none}
 .sheet td.mvc{padding:2px;white-space:nowrap;text-align:center}
 .sheet td.mvc{position:sticky;right:0;background:#fff;z-index:2;box-shadow:-6px 0 6px -6px rgba(0,0,0,.3)}.sheet th.noprint{position:sticky;right:0;z-index:3;background:#f1f5f9;box-shadow:-6px 0 6px -6px rgba(0,0,0,.3)}.sheet td.mvc button{min-height:26px;min-width:34px;padding:0;margin:0 1px;font-size:12px;border-radius:7px}
 td.catcell{border-left:6px solid var(--cc,#cbd5e1);padding-left:6px}select.cat{width:var(--w-cat);min-width:var(--w-cat)}
@@ -149,17 +147,7 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
   </section>
 
   <section class="card pinned" id="voiceCard">
-    <div class="row vhead" style="justify-content:space-between;margin-bottom:6px"><strong style="font-size:14px">🎙️ 語音輸入</strong><span class="row" style="gap:6px;flex-wrap:nowrap"><button id="rbBtn" class="secondary" type="button" style="min-height:34px;padding:4px 10px">🔊 複讀：關</button><button id="pinBtn" class="secondary" type="button" style="min-height:34px;padding:4px 10px">📌 已固定</button></span></div>
-    <div class="row vrow">
-      <div class="grow">
-        <label>語音辨識文字（也可以直接手動輸入）</label>
-        <textarea id="speechText" placeholder="例如：HF 402 液位 128、NaOH 450、FeCl3 360、硫酸 325"></textarea>
-      </div>
-      <div style="min-width:130px">
-        <button id="voiceBtn" class="voice" type="button">🎙️ 開始說話</button>
-        <div class="small" style="margin-top:5px">iPhone Safari 可嘗試直接語音辨識</div>
-      </div>
-    </div>
+    <div class="row vhead" style="justify-content:space-between;margin-bottom:6px"><strong style="font-size:14px">🎙️ 語音報數</strong><span class="row" style="gap:6px;flex-wrap:nowrap"><button id="rbBtn" class="secondary" type="button" style="min-height:34px;padding:4px 10px">🔊 複讀：關</button><button id="pinBtn" class="secondary" type="button" style="min-height:34px;padding:4px 10px">📌 已固定</button></span></div>
     <div id="guide" class="gbox hidden">
       <div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:6px">
         <div class="grow"><span class="small" id="gProg"></span><div id="gName"></div></div>
@@ -181,13 +169,12 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
     </div>
     <div class="row vbtns" style="margin-top:10px">
       <button id="guideBtn" class="primary" type="button">📋 逐項報數</button>
-      <button id="fillBtn" class="primary" type="button">自動填入表格</button>
-      <span id="voiceStatus" class="status grow">等待輸入</span>
+      <span id="voiceStatus" class="status grow">按「逐項報數」開始</span>
     </div>
     <details class="colctl vnote"><summary>ℹ️ 使用說明（完整版在「⋯ 更多功能 → 📖 使用說明」）</summary><div class="notice" style="margin-top:10px">
-      建議用「📋 逐項報數」：App 會依序顯示每個項目，你只要說數字，說「下一項」「更正」「結束」可控制。整段口述請說「HF 402 液位 128、NaOH 450…」後按「自動填入表格」。
+      按「📋 逐項報數」：App 會依序顯示每個項目，你只要說數字，說「下一項」「更正」（或「上一項」）「結束」可控制。
       第一次使用麥克風時，iPhone 會要求授權。
-    </div><button id="demoBtn" class="secondary" type="button" style="margin-top:8px">填入語音範例</button> <button id="diagBtn" class="secondary" type="button" style="margin-top:8px">🔧 語音診斷</button><div id="diagBox" class="hidden" style="margin-top:8px"><pre id="diagInfo" style="white-space:pre-wrap;font-size:12px;background:#f1f5f9;padding:8px;border-radius:8px;margin:0 0 8px"></pre><div class="small" style="margin-bottom:6px">辨識語言：<select id="diagLang" style="width:auto;min-width:0;display:inline-block"><option value="zh-TW">中文（台灣）</option><option value="zh-CN">中文（普通話）</option><option value="yue-Hant-HK">粵語（香港）</option><option value="en-US">English（美國）</option></select> <span class="small">換語言後再按「開始說話」測試</span></div>
+    </div><button id="diagBtn" class="secondary" type="button" style="margin-top:8px">🔧 語音診斷</button><div id="diagBox" class="hidden" style="margin-top:8px"><pre id="diagInfo" style="white-space:pre-wrap;font-size:12px;background:#f1f5f9;padding:8px;border-radius:8px;margin:0 0 8px"></pre><div class="small" style="margin-bottom:6px">辨識語言：<select id="diagLang" style="width:auto;min-width:0;display:inline-block"><option value="zh-TW">中文（台灣）</option><option value="zh-CN">中文（普通話）</option><option value="yue-Hant-HK">粵語（香港）</option><option value="en-US">English（美國）</option></select> <span class="small">換語言後再用「逐項報數」測試</span></div>
 <div id="diagMic" class="small" style="margin-bottom:6px"></div><div class="row"><button id="diagTest" class="primary" type="button">🎤 測試麥克風（3 秒）</button><button id="diagReset" class="secondary" type="button">♻️ 重設語音</button></div></div></details>
   </section>
 
@@ -773,53 +760,6 @@ function normSpeech(t){
   t=t.replace(/(\d)\s*點\s*(\d)/g,'$1.$2').replace(/負\s*(\d)/g,'-$1');
   return t.replace(/(\D)\s+/g,'$1').replace(/\s+(\D)/g,'$1');
 }
-function aliasesFor(name){
-  const a=[name];const n=name.toLowerCase();
-  const add=(...x)=>a.push(...x);
-  const b1=n.includes('b1f');
-  if(n.includes('hf')) add('HF 402','HF','T-402','氫氟酸','HF收集槽');
-  if(n.includes('naoh')) add('NaOH','氫氧化鈉','苛性鈉','燒鹼');
-  if(n.includes('fecl3')){ if(b1) add('FeCl3','氯化鐵','B1F氯化鐵','桶槽氯化鐵','地下室氯化鐵'); else add('一樓氯化鐵','藥槽氯化鐵','1F FeCl3 藥槽'); }
-  if(n.includes('h2so4')){ if(b1) add('H2SO4','硫酸','B1F硫酸','桶槽硫酸','地下室硫酸'); else add('一樓硫酸','藥槽硫酸','1F H2SO4 藥槽'); }
-  if(n.includes('cacl2')) add('CaCl2','氯化鈣','一樓氯化鈣');
-  if(n.includes('pol')) add('POL','T02-03','廢水桶槽POL');
-  if(n.includes('mes')) add('MES','T02-04','廢水桶槽MES');
-  if(n.includes('ph')){
-    if(n.includes('收集槽')) add('收集槽PH','研磨收集槽','收集槽的PH');
-    if(n.includes('快混槽')) add('快混槽','快混槽PH','快混');
-    if(n.includes('調整槽')) add('調整槽','PH調整槽','調整槽PH');
-    if(n.includes('慢混槽')) add('慢混槽','慢混槽PH','慢混');
-    if(n.includes('沉澱槽')) add('沉澱槽','沉澱槽PH','沉澱');
-  }
-  if(n.includes('總放流量')) add('總放流量','放流量累計','總放流');
-  if(n.includes('酸鹼廢水流量')) add('酸鹼廢水','酸鹼流量','酸鹼累計');
-  if(n.includes('研磨廢水流量')) add('研磨流量','研磨廢水流量');
-  if(n.includes('切割廢水流量')) add('切割流量','切割廢水');
-  if(n.includes('電表')) add('電表','用電量','電表累計');
-  if(n.includes('銅電渡液')) add('銅電鍍液','銅電渡液','銅液','電鍍液');
-  return [...new Set(a)];
-}
-function escapeReg(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
-function autoFill(){
-  collectRows();
-  const t=normSpeech($('speechText').value);
-  let count=0;
-  items.forEach(r=>{
-    if(isHiddenCat(r))return;
-    const als=aliasesFor(r[0]).map(normSpeech).filter(Boolean).sort((x,y)=>y.length-x.length);
-    for(const a of als){
-      const re=new RegExp(escapeReg(a)+'[^0-9\\-.，,。；;、\\n]{0,4}(-?\\d+(?:\\.\\d+)?)');
-      const m=t.match(re);
-      if(m){r[3]=m[1];count++;break;}
-    }
-    if(r[0].includes('排水閥件')){
-      const vm=t.match(/排水閥件[^，,。；;]*?(不正常|異常|否|正常)/);
-      if(vm){r[3]=vm[1]==='正常'?'正常':'否';count++;}
-    }
-  });
-  saveItems();render();
-  $('message').textContent=count?`已自動填入 ${count} 項。請檢查後再儲存。`:'沒有對應到數值；可以先確認語音文字，或改用「逐項報數」。';
-}
 function saveInspection(){
   collectRows(); saveItems();
   const abnormal=items.filter(r=>!isHiddenCat(r)&&judgeRow(r).t==='異常').length;
@@ -830,7 +770,14 @@ function saveInspection(){
   cloudSaveRecord(record).then(ok=>{if(ok){record.remote=true;lsSet(KEY_HISTORY,history);}});
   $('message').textContent=`已儲存 ${record.date} ${record.tab} 夜班巡檢。${abnormal?` ⚠️ 異常 ${abnormal} 項，請確認。`:' 全部已填項目未判定異常。'}${missing?` ⚠️ 尚有 ${missing} 項未填（可按「檢查漏填」）。`:''}`;
 }
-function clearValues(){items.forEach(r=>r[3]='');saveItems();render();$('message').textContent='已清除本次實際讀值。';}
+function clearValues(){
+  let keep=0;
+  items.forEach(r=>{
+    if(String(r[2]).trim()==='='){const pv=prevMap[r[0]];if(pv!==undefined)r[3]=pv;if(String(r[3]).trim()!=='')keep++;return;}   // 「=」＝固定帶入上次值，不清除
+    r[3]='';
+  });
+  saveItems();render();$('message').textContent='已清除本次實際讀值。'+(keep?`標準為「=」的 ${keep} 項保留上次值。`:'');
+}
 function csvCell(v){return '"'+String(v).replaceAll('"','""')+'"';}
 async function saveFile(filename,text,mime){
   try{
@@ -869,8 +816,6 @@ function showHistory(){
   }));
 }
 $('addBtn').addEventListener('click',()=>{collectRows();items.push(['新巡檢項目','','','','',''].slice(0,4).concat([items.length?(items[items.length-1][4]||''):'']));saveItems();render();const x=$('tbody').lastElementChild.querySelector('.name');x.focus();});
-$('fillBtn').addEventListener('click',autoFill);
-$('demoBtn').addEventListener('click',()=>$('speechText').value='HF 402 液位 128，NaOH 450，FeCl3 360，硫酸 325');
 $('saveBtn').addEventListener('click',saveInspection);
 $('clearBtn').addEventListener('click',clearValues);
 $('exportBtn').addEventListener('click',exportCSV);
@@ -880,13 +825,12 @@ $('closeHistoryBtn').addEventListener('click',()=>$('historyCard').classList.add
 let recognition=null, listening=false;
 function setupSpeech(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){$('voiceBtn').disabled=true;$('voiceBtn').textContent='🎙️ 此瀏覽器不支援';$('voiceStatus').textContent='可用鍵盤輸入或使用 iPhone 內建聽寫。';return;}
+  if(!SR){$('voiceStatus').textContent='此瀏覽器不支援語音辨識：逐項報數時請直接輸入讀值。';return;}
   recognition=new SR(); recognition.lang=lsGet('wasteInspectionSpeechLang','zh-TW'); recognition.continuous=false; recognition.interimResults=true; recognition.maxAlternatives=5;
-  recognition.onstart=()=>{earYield(true);vlog('開始聆聽');listening=true;$('voiceBtn').classList.add('recording');$('voiceBtn').textContent='⏹️ 停止說話';$('voiceStatus').textContent='正在聆聽…'};
-  recognition.onresult=e=>{if(guided.on){guidedResult(e);return;}let final='',interim='';for(let i=e.resultIndex;i<e.results.length;i++){const s=e.results[i][0].transcript;if(e.results[i].isFinal)final+=s;else interim+=s;}if(final)$('speechText').value=(($('speechText').value+' '+final).trim());if(final&&rb.on)speak(final);$('voiceStatus').textContent=interim?'辨識中：'+interim:'已收到語音';};
-  recognition.onerror=e=>{lastErr=e.error;vlog('錯誤 '+e.error);if(guided.on){guidedError(e);return;}$('voiceStatus').textContent='語音辨識失敗：'+errText(e.error);listening=false;$('voiceBtn').classList.remove('recording');$('voiceBtn').textContent='🎙️ 開始說話';};
-  recognition.onend=()=>{vlog('結束');listening=false;earYield(false);if(guided.on){guidedEnd();return;}$('voiceBtn').classList.remove('recording');$('voiceBtn').textContent='🎙️ 開始說話';};
-  $('voiceBtn').addEventListener('click',()=>{if(listening)recognition.stop();else{try{recognition.start();}catch(e){}}});
+  recognition.onstart=()=>{earYield(true);vlog('開始聆聽');listening=true;};
+  recognition.onresult=e=>{if(guided.on)guidedResult(e);};
+  recognition.onerror=e=>{lastErr=e.error;vlog('錯誤 '+e.error);listening=false;if(guided.on)guidedError(e);};
+  recognition.onend=()=>{vlog('結束');listening=false;earYield(false);if(guided.on)guidedEnd();};
   recognition.onaudiostart=()=>vlog('麥克風開始收音');
   recognition.onsoundstart=()=>{vlog('偵測到聲音');guided.ns=0;};
   recognition.onspeechstart=()=>vlog('偵測到語音');
@@ -947,7 +891,7 @@ function guidedError(e){
 function parseGuide(raw){
   const r=items[guided.i];const t=normSpeech(raw);const w=String(raw).trim();
   if(/結束|完成|停止/.test(w))return {cmd:'end'};
-  if(/更正|上一|重來|重說|回上/.test(w))return {cmd:'prev'};
+  if(/更正|上一|重來|重說|回上|觀戰|關戰|觀站|官戰|更政|耕正|庚正|跟正|更證|改正/.test(w))return {cmd:'prev'};   // iPhone 常把「更正」聽成「觀戰」等
   if(/下一|跳過|略過/.test(w))return {cmd:'next'};
   if(isValve(r)){
     if(/不正常|異常|否|不好|壞/.test(w))return {val:'否'};
@@ -1361,7 +1305,7 @@ function earAction(a){
       }else{
         guided.noMic=false;$('gHeard').textContent='請說數字…';beep(880,120);listenGuide();
       }
-    }else{$('voiceBtn').click();beep(listening?440:880,120);}
+    }else{startGuide();beep(880,120);}
   }else if(a==='next'){
     if(guided.on){beep(660,80);goNext();}
   }else if(a==='prev'){
@@ -1388,7 +1332,7 @@ function earOn(){
     Object.keys(map).forEach(a=>{try{navigator.mediaSession.setActionHandler(a,()=>earAction(map[a]));}catch(e){}});
     keepEar();
     $('earBtn').textContent='🎧 耳機按鍵：開';
-    $('message').textContent='耳機按鍵已啟用：按一下＝開始／停止聆聽；按兩下＝跳過；按三下＝更正。請保持畫面開啟。';
+    $('message').textContent='耳機按鍵已啟用：按一下＝開始逐項報數／暫停或繼續聆聽；按兩下＝跳過；按三下＝更正。請保持畫面開啟。';
   };
   if(p&&p.then)p.then(ready).catch(()=>{$('message').textContent='無法啟動耳機控制（瀏覽器擋下了背景音訊）。請再按一次，或改用獨立網站版。';});else ready();
 }
@@ -1619,12 +1563,12 @@ async function micTest(){
 }
 function voiceReset(){
   try{recognition&&recognition.abort();}catch(e){}
-  listening=false;$('voiceBtn').classList.remove('recording');$('voiceBtn').textContent='🎙️ 開始說話';
+  listening=false;
   try{speechSynthesis.cancel();}catch(e){}
   try{if(actx){actx.close();actx=null;}}catch(e){}
   if(ear.on)earOff();
   guided.noMic=false;guided.paused=false;guided.busy=false;guided.ns=0;lastErr='';voiceLog.length=0;
-  $('voiceStatus').textContent='已重設語音（耳機按鍵已關閉）。請再按一次麥克風。';
+  $('voiceStatus').textContent='已重設語音（耳機按鍵已關閉）。請再按一次「逐項報數」。';
   $('message').textContent='已重設語音。若仍聽不到聲音，請關閉「🔊 複讀」，並確認 Safari 的麥克風權限。';
 }
 $('diagLang').value=lsGet('wasteInspectionSpeechLang','zh-TW');
@@ -1765,7 +1709,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v47（2026-10-21）';
+const APP_VER='v48（2026-10-23）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -2041,7 +1985,7 @@ const HELP=[
 <li><b>↕</b>：按住上下拖曳，可以移動這條列的位置；<b>連點兩下</b>還原。</li>
 <li>「<b>前次值</b>」欄顯示上一個日期已儲存的數值，方便核對。</li>
 <li>表格標題列右側的「<b>↕ 自動捲動</b>」：<b>關</b>（預設）＝畫面不會自己移動，需要自己滑；<b>開</b>＝跳格時自動把前一項排在上方。</li>
-<li>自動捲動開啟時，輸入實際值期間「語音輸入」區塊會暫時不固定在上方，讓出空間給表格；離開輸入格就恢復。</li>
+<li>自動捲動開啟時，輸入實際值期間「語音報數」區塊會暫時不固定在上方，讓出空間給表格；離開輸入格就恢復。</li>
 <li>自動捲動開啟時，會多出「<b>🎯 微調</b>」按鍵（標題列和鍵盤上方各一個）：按「▲ 上移／▼ 下移」每次移動 40px（正在輸入的那一列會閃黃色，鍵盤上方的列會變成「▲ 上移／▼ 下移／還原」，上方顯示結果；調好再按 🎯 收起），調整輸入列停在畫面上的位置，會自動記住；「還原」回到預設。</li>
 <li>如果這條列被鍵盤蓋住：到「⚙ 表格設定 → ↔ 調整欄位寬度 → 確定列位置」改成「固定在畫面中間偏上」。</li>
 </ul>`],
@@ -2054,9 +1998,10 @@ const HELP=[
 <li>判定結果：正常、異常、—（沒填或不判定）、無前值（沒有上次紀錄可比較）。</li>
 </ul>`],
 ['4　語音填表',`<ul>
-<li><b>📋 逐項報數（建議）</b>：App 依序顯示每個項目，你只要說數字；可說「下一項」「更正」「結束」。pH 超出 0–14 會提醒重說。</li>
-<li><b>🎙️ 開始說話</b>：整段口述，例如「HF 402 液位 128、NaOH 450」，再按「自動填入表格」。</li>
-<li><b>🎧 耳機按鍵</b>（⋯ 更多功能）：按一下＝開始／停止聆聽；按兩下＝跳過；按三下＝更正。</li>
+<li><b>📋 逐項報數</b>：App 依序顯示每個項目，你只要說數字；可說「下一項」「更正」「結束」。pH 超出 0–14 會提醒重說。</li>
+<li>「更正」常被聽成「觀戰」之類的詞，App 也會當成更正；也可以說「上一項」或「重來」。</li>
+<li>沒有麥克風或聽不清楚時，可以直接在報數框輸入讀值，按「確定 ▶」。</li>
+<li><b>🎧 耳機按鍵</b>（⋯ 更多功能）：按一下＝開始逐項報數／暫停或繼續聆聽；按兩下＝跳過；按三下＝更正。</li>
 <li><b>🔊 複讀</b>：辨識完會逐字唸出數值，唸完才跳下一項（語音區的開關）。</li>
 <li><b>🔧 語音診斷</b>（語音區的「ℹ️ 使用說明」裡）：測試麥克風、重設語音、更換辨識語言。</li>
 </ul>
@@ -2082,7 +2027,7 @@ const HELP=[
 ['8　檢查漏填、歷史與匯出',`<ul>
 <li><b>🔍 檢查漏填</b>：列出各分頁還沒填的項目，點一下會跳到那一列；「從漏填處開始報數」可以直接接著報。</li>
 <li><b>🕘 歷史紀錄</b>：每次儲存都會留下，可以「載入」回表格查看；多人共用時會標示儲存者。</li>
-<li><b>📊 匯出 CSV</b>：把目前分頁下載成 CSV。<b>清除本次讀值</b>：清空目前分頁的實際值（已儲存的紀錄不受影響）。</li>
+<li><b>📊 匯出 CSV</b>：把目前分頁下載成 CSV。<b>清除本次讀值</b>：清空目前分頁的實際值（已儲存的紀錄不受影響）；標準為「=」的項目會保留上次值。</li>
 </ul>`],
 ['9　備份與多人共用',`<ul>
 <li>「⋯ 更多功能 → 📦 備份／同步」會顯示雲端連線狀態、App 版本，以及「共用設定最後更新」的時間。</li>
