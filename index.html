@@ -149,9 +149,9 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
   <section class="card pinned" id="voiceCard">
     <div class="row vhead" style="justify-content:space-between;margin-bottom:6px"><strong style="font-size:14px">🎙️ 語音報數</strong><span class="row" style="gap:6px;flex-wrap:nowrap"><button id="rbBtn" class="secondary" type="button" style="min-height:34px;padding:4px 10px">🔊 複讀：關</button><button id="pinBtn" class="secondary" type="button" style="min-height:34px;padding:4px 10px">📌 已固定</button></span></div>
     <div id="guide" class="gbox hidden">
-      <div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:6px">
-        <div class="grow"><span class="small" id="gProg"></span><div id="gName"></div></div>
-        <span class="row" style="gap:6px;flex-wrap:nowrap;flex:none"><button id="gRb" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">🔊 複讀：關</button><button id="gMin" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">▲ 收合</button></span>
+      <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:6px">
+        <div class="grow" style="flex:1 1 200px"><span class="small" id="gProg"></span><div id="gName"></div></div>
+        <span class="row" style="gap:6px;flex-wrap:nowrap;flex:none;margin-left:auto"><button id="gSpeed" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">⏩ 速度：標準</button><button id="gRb" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">🔊 複讀：關</button><button id="gMin" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">▲ 收合</button></span>
       </div>
       <div class="small gx"><span id="gMeta"></span><span id="gHist"></span></div>
       <div id="gLast" class="gx" style="font-size:13px;margin:6px 0;padding:4px 8px;background:#fff;border-radius:8px;border:1px solid #bfdbfe"></div>
@@ -564,7 +564,48 @@ function judgement(v,std,prev){
   return {t:'—',c:'na'};
 }
 function judgeRow(r){return judgement(r[3],r[2],prevMap[r[0]]);}
-function saveItems(){curTab().items=items;lsSet(KEY_TABS,{tabs:tabs,active:activeId,mig:3});}
+function saveItems(){curTab().items=items;lsSet(KEY_TABS,{tabs:tabs,active:activeId,mig:3});markValTime();}
+// 記錄每個分頁「最後輸入讀值」的時間（雲端套用設定會重建分頁，所以另外存）
+const KEY_VALTIME='wasteInspectionValTime',KEY_VALBAK='wasteInspectionValBackup',STALE_MS=8*3600*1000;
+function valSig(arr){return arr.filter(r=>String(r[2]).trim()!=='=').map(r=>String(r[3]??'').trim()).join('\u0001');}
+function markValTime(){
+  const vt=lsGet(KEY_VALTIME,{}),sig=valSig(items),o=vt[activeId];
+  if(o&&o.s===sig)return;
+  vt[activeId]={t:Date.now(),s:sig};lsSet(KEY_VALTIME,vt);
+}
+function clearStaleValues(){   // 距離最後一次輸入超過 8 小時＝上一班的讀值，自動清除（「=」項目保留上次值）
+  if(typeof guided!=='undefined'&&guided.on)return;
+  if(document.activeElement&&document.activeElement.classList&&document.activeElement.classList.contains('actual'))return;
+  collectRows();
+  const vt=lsGet(KEY_VALTIME,{}),now=Date.now(),bak={at:now,tabs:{}};let n=0,oldest=now;
+  tabs.forEach(t=>{
+    const arr=t.id===activeId?items:t.items;
+    const has=arr.some(r=>String(r[2]).trim()!=='='&&String(r[3]??'').trim()!=='');
+    const o=vt[t.id];
+    if(!has||(o&&o.s===valSig(arr)&&now-o.t<STALE_MS))return;
+    bak.tabs[t.id]=arr.map(r=>[r[0],r[3]]);
+    if(o&&o.t<oldest)oldest=o.t;
+    arr.forEach(r=>{if(String(r[2]).trim()!=='='&&String(r[3]??'').trim()!==''){r[3]='';n++;}});
+    vt[t.id]={t:now,s:valSig(arr)};
+  });
+  if(!n)return;
+  lsSet(KEY_VALBAK,bak);lsSet(KEY_VALTIME,vt);lsSet(KEY_TABS,{tabs:tabs,active:activeId,mig:3});
+  render();
+  const when=oldest<now?new Date(oldest).toLocaleString('zh-TW',{hour12:false,month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'先前';
+  $('message').innerHTML='已清除上一班的讀值 '+n+' 項（'+esc(when)+' 輸入，超過 8 小時）。<button id="valRestore" class="secondary" type="button" style="min-height:32px;padding:2px 10px;margin-left:6px">↩️ 復原</button>';
+  $('valRestore').addEventListener('click',restoreStaleValues);
+}
+function restoreStaleValues(){
+  const bak=lsGet(KEY_VALBAK,null);if(!bak||!bak.tabs){$('message').textContent='沒有可以復原的讀值。';return;}
+  collectRows();let n=0;
+  tabs.forEach(t=>{
+    const b=bak.tabs[t.id];if(!b)return;const m={};b.forEach(x=>{m[x[0]]=x[1];});
+    (t.id===activeId?items:t.items).forEach(r=>{if(m[r[0]]!==undefined&&String(r[3]??'').trim()===''&&String(m[r[0]]).trim()!==''){r[3]=m[r[0]];n++;}});
+  });
+  lsSet(KEY_TABS,{tabs:tabs,active:activeId,mig:3});
+  const vt=lsGet(KEY_VALTIME,{});tabs.forEach(t=>{vt[t.id]={t:Date.now(),s:valSig(t.id===activeId?items:t.items)};});lsSet(KEY_VALTIME,vt);
+  render();$('message').textContent='已復原 '+n+' 項讀值。';
+}
 function twoStep(btn,label,fn){
   if(btn.dataset.armed){clearTimeout(btn._t);delete btn.dataset.armed;btn.textContent=btn.dataset.orig;fn();return;}
   btn.dataset.armed='1';btn.dataset.orig=btn.textContent;btn.textContent=label;
@@ -844,6 +885,9 @@ document.querySelectorAll('[data-col]').forEach(r=>r.addEventListener('input',()
 $('colReset').addEventListener('click',()=>{colW=Object.assign({},COLDEF);saveView();applyCols();});
 applyCols();
 let guided={on:false,i:0,t:null,rt:null,busy:false,noMic:false,paused:false,seq:0};
+const GSPEED=[{n:'快',wait:600,rate:1.3},{n:'標準',wait:1500,rate:1},{n:'慢',wait:2500,rate:0.85},{n:'很慢',wait:4000,rate:0.75}];   // 填入後等多久跳下一項、複讀語速
+let gSpeed=Math.min(GSPEED.length-1,Math.max(0,Number(lsGet('wasteInspectionGuideSpeed',1))||0));
+function applyGSpeed(){$('gSpeed').textContent='⏩ 速度：'+GSPEED[gSpeed].n;}
 function isValve(r){return r[0].includes('閥')||String(r[1]).includes('正常');}
 function startGuide(){
   collectRows();
@@ -893,6 +937,10 @@ function parseGuide(raw){
   if(/結束|完成|停止/.test(w))return {cmd:'end'};
   if(/更正|上一|重來|重說|回上|觀戰|關戰|觀站|官戰|更政|耕正|庚正|跟正|更證|改正/.test(w))return {cmd:'prev'};   // iPhone 常把「更正」聽成「觀戰」等
   if(/下一|跳過|略過/.test(w))return {cmd:'next'};
+  if(/相同|一樣|同上次|跟上次|和上次|沒變|不變|照舊/.test(w)){   // 說「相同」＝帶入上次值
+    const pv=prevMap[r[0]];
+    return pv!==undefined&&String(pv).trim()!==''?{val:String(pv)}:{warn:'這一項沒有上次值，請說數字'};
+  }
   if(isValve(r)){
     if(/不正常|異常|否|不好|壞/.test(w))return {val:'否'};
     if(/正常|ok|好/i.test(w))return {val:'正常'};
@@ -932,9 +980,9 @@ function commitGuide(v){
   const seq=guided.seq;
   const go=()=>{if(guided.seq!==seq||!guided.on)return;guided.busy=false;goNext();};
   if(rb.on&&window.speechSynthesis){
-    speak(spokenValue(v),()=>{if(guided.seq!==seq||!guided.on)return;clearTimeout(guided.t);guided.t=setTimeout(go,500);});
-    guided.t=setTimeout(go,9000);
-  }else guided.t=setTimeout(go,1500);
+    speak(spokenValue(v),()=>{if(guided.seq!==seq||!guided.on)return;clearTimeout(guided.t);guided.t=setTimeout(go,Math.max(300,GSPEED[gSpeed].wait-1000));});
+    guided.t=setTimeout(go,9000+GSPEED[gSpeed].wait);
+  }else guided.t=setTimeout(go,GSPEED[gSpeed].wait);
 }
 function goNext(){
   let q=stepVis(guided.i,1);
@@ -954,6 +1002,8 @@ $('gVal').addEventListener('keydown',e=>{if(e.key==='Enter'){const v=$('gVal').v
 $('gMic').addEventListener('click',()=>{guided.noMic=false;guided.paused=false;listenGuide();$('gHeard').textContent='請說數字…';});
 $('gPrev').addEventListener('click',()=>{const q=stepVis(guided.i,-1);if(q!==null)guided.i=q;showGuide();});
 $('gSkip').addEventListener('click',goNext);
+$('gSpeed').addEventListener('click',()=>{gSpeed=(gSpeed+1)%GSPEED.length;lsSet('wasteInspectionGuideSpeed',gSpeed);applyGSpeed();$('gHeard').textContent='速度：'+GSPEED[gSpeed].n+'（填入後 '+(GSPEED[gSpeed].wait/1000)+' 秒跳下一項）';});
+applyGSpeed();
 $('gEnd').addEventListener('click',()=>endGuide());
 let checking=false;
 function missingOf(arr,t){const tt=t||curTab();return arr.map((r,i)=>({r,i})).filter(x=>!hiddenIn(tt,x.r)&&String(x.r[3]).trim()==='');}
@@ -1346,7 +1396,7 @@ function speak(text,done){
   let fin=false;const end=()=>{if(fin)return;fin=true;if(done)done();};
   try{
     speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';u.rate=1;
+    const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';u.rate=(typeof gSpeed==='number'&&GSPEED[gSpeed])?GSPEED[gSpeed].rate:1;
     u.onend=end;u.onerror=end;
     speechSynthesis.speak(u);
     setTimeout(end,6000);
@@ -1709,7 +1759,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v48（2026-10-23）';
+const APP_VER='v49（2026-10-24）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -1977,6 +2027,7 @@ const HELP=[
 <li>打開後先選上方的<b>分頁</b>（例如 P1、P2），日期預設是今天。</li>
 <li>在「<b>實際值</b>」欄點一下，輸入數字；用鍵盤上方的 <b>確定 ▶</b> 跳到下一格。</li>
 <li>全部填完，按最下面的 <b>💾 儲存夜班巡檢</b>。儲存後可在「⋯ 更多功能 → 🕘 歷史紀錄」查看。</li>
+<li>打開 App 時，如果表格裡的讀值是<b>超過 8 小時前</b>輸入的（上一班的），會自動清除；標準為「=」的項目保留上次值。清錯了可以按訊息旁的「<b>↩️ 復原</b>」。</li>
 <li>表格最右邊的「判定」會自動顯示 <b>正常／異常</b>，異常的項目請再確認。</li>
 </ul>
 <div class="note">沒有按「儲存」，這次輸入的數值不會留下紀錄，也不會讓別人看到。</div>`],
@@ -2000,6 +2051,8 @@ const HELP=[
 ['4　語音填表',`<ul>
 <li><b>📋 逐項報數</b>：App 依序顯示每個項目，你只要說數字；可說「下一項」「更正」「結束」。pH 超出 0–14 會提醒重說。</li>
 <li>「更正」常被聽成「觀戰」之類的詞，App 也會當成更正；也可以說「上一項」或「重來」。</li>
+<li>說「<b>相同</b>」（或「一樣」「跟上次一樣」）：自動帶入這一項的上次值。沒有上次值時會請你說數字。</li>
+<li><b>⏩ 速度</b>（報數框右上）：填入後等多久跳下一項，分「快 0.6 秒／標準 1.5 秒／慢 2.5 秒／很慢 4 秒」，複讀的語速也會跟著調整，會記住你的設定。</li>
 <li>沒有麥克風或聽不清楚時，可以直接在報數框輸入讀值，按「確定 ▶」。</li>
 <li><b>🎧 耳機按鍵</b>（⋯ 更多功能）：按一下＝開始逐項報數／暫停或繼續聆聽；按兩下＝跳過；按三下＝更正。</li>
 <li><b>🔊 複讀</b>：辨識完會逐字唸出數值，唸完才跳下一項（語音區的開關）。</li>
@@ -2102,7 +2155,8 @@ $('delTabBtn').addEventListener('click',e=>{
     render();renderTabs();$('message').textContent='已刪除分頁「'+nm+'」。歷史紀錄仍保留。';
   });
 });
-setToday();render();renderTabs();renderCatEditor();renderColChips();applyColVis();setupSpeech();
+setToday();clearStaleValues();render();renderTabs();renderCatEditor();renderColChips();applyColVis();setupSpeech();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)clearStaleValues();});
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}cloudInit();
 </script>
 </body>
