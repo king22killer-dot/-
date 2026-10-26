@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="薪資出勤">
-<link rel="manifest" href="salary-manifest.json">
+<link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>薪資出勤</title>
 <style>
@@ -98,6 +98,7 @@ details summary{cursor:pointer;color:#2563eb;font-size:13px;margin-top:6px}
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"></div>
 <script>
+const APP_VER='v1（2026-10-26）';
 const KEY='salaryBoss.v1';
 const LEAVES=[
   {id:'rest',name:'休假',short:'休',factor:null,color:'#94a3b8'},
@@ -378,7 +379,7 @@ function renderSet(){
   <div class="card"><b>備份</b><div class="small">資料只存在這支手機的瀏覽器裡，換手機或清除瀏覽器資料前請先備份。</div>
   <div class="row" style="margin-top:8px"><button class="secondary grow" id="bkOut">⬇️ 匯出備份</button><button class="secondary grow" id="bkIn">⬆️ 匯入備份</button></div>
   <input type="file" id="bkFile" accept=".json,application/json" style="display:none">
-  <button class="danger" style="width:100%;margin-top:8px" id="wipe">清除全部資料</button></div>`+helpCard();
+  <button class="danger" style="width:100%;margin-top:8px" id="wipe">清除全部資料</button></div>`+helpCard()+`<div class="small" style="text-align:center;margin:8px 0">App 版本：${APP_VER}</div>`;
   $('view').innerHTML=h;
   document.querySelectorAll('[data-sid]').forEach(li=>li.onclick=()=>editShift(li.dataset.sid));
   $('sSave').onclick=()=>{Object.assign(st,{ot1:num($('sOt1').value)||1.34,ot2:num($('sOt2').value)||1.67,monthDiv:num($('sDiv').value)||240,dayHours:num($('sDh').value)||8});save();render();toast('已儲存');};

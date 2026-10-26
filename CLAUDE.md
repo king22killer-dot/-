@@ -31,3 +31,10 @@ iPhone 用的夜班抄表網頁 App。純靜態網站，沒有建置步驟，部
 ## 使用者偏好
 - 介面與說明一律繁體中文。
 - 使用者主要在 iPhone 上使用；鍵盤遮擋是最常見的問題，改動確定列／捲動時要特別小心。
+
+## 另一個獨立 App：薪資出勤（`salary/`）
+老闆用的排班＋出勤＋薪資統計 App，跟夜班小幫手完全分開（自己的 manifest、圖示、Service Worker），網址 https://king22killer-dot.github.io/-/salary/。
+- `salary/index.html`：整個 App。資料存在瀏覽器 localStorage（key `salaryBoss.v1`），沒有接 Firebase；設定頁有匯出／匯入備份。
+- `salary/sw.js`：`CACHE` 名稱 `salary-vN`，跟 `salary/index.html` 的 `APP_VER` 同步加 1。改這個 App 時不用動夜班小幫手的版本號。
+- 薪資計算在 `calc()`：時薪＝工時×時薪、日薪＝出勤天數×日薪、月薪＝月薪−請假扣款（月薪÷30）；加班前 2 小時 ×1.34、之後 ×1.67（設定可改）；特休全薪、病假半薪、事假無薪。
+- 有新功能時更新 `helpCard()` 的使用說明。
