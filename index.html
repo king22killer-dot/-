@@ -240,6 +240,7 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
       <button id="historyBtn" class="secondary" type="button">🕘 歷史紀錄</button>
       <button id="syncBtn" class="secondary" type="button">📦 備份／同步</button>
       <button id="earBtn" class="secondary" type="button">🎧 耳機按鍵：關</button>
+      <a href="salary.html" class="secondary" style="display:inline-flex;align-items:center;border-radius:11px;padding:10px 14px;min-height:44px;text-decoration:none;color:#0f172a">💰 薪資出勤（老闆用）</a>
     </div>
     <div id="message" class="status" style="margin-top:10px">準備完成。</div>
   </section>
@@ -1759,7 +1760,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v49（2026-10-24）';
+const APP_VER='v50（2026-10-26）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -2095,6 +2096,11 @@ const HELP=[
 <li><b>鍵盤上面跳出「密碼」建議或網址？</b>這是 iPhone 的密碼自動填入，可到「設定→密碼→密碼選項」關閉。</li>
 <li><b>輸入時畫面不會自己移動？</b>這是預設（自動捲動關閉）。要開請按表格標題列的「↕ 自動捲動」。</li>
 <li><b>儲存後別人看不到？</b>需要先登入雲端，並確認「備份／同步」顯示已連線。</li>
+</ul>`],
+['11　💰 薪資出勤（老闆用）',`<ul>
+<li>「⋯ 更多功能 → 💰 薪資出勤」打開另一個頁面，用來排班並統計每位員工的<b>出勤天數、工時、加班與薪資</b>。</li>
+<li>先在「👥 員工」新增員工並設定時薪／日薪／月薪；在「📅 班表」選員工、點班別再點日期就能排班。</li>
+<li>「📊 統計」可匯出 Excel（CSV）或複製文字。資料只存在這支手機，記得在「⚙️ 設定」匯出備份。</li>
 </ul>`]
 ];
 function renderHelp(){
