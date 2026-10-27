@@ -932,8 +932,15 @@ function guidedError(e){
   else if(e.error==='no-speech'){guided.ns=(guided.ns||0)+1;if(guided.ns>=3)$('gHeard').textContent='⚠️ 連續聽不到聲音：請檢查麥克風／耳機收音；可先關閉「🎧 耳機按鍵」「🔊 複讀」；結束報數後到「ℹ️ 使用說明」→「🔧 語音診斷」測試。';}
   else if(e.error!=='aborted'){$('gHeard').textContent='辨識錯誤：'+errText(e.error)+'（可手動輸入）';}
 }
+// 逐項報數只需要數字：噪音大時 iPhone 常把數字聽成同音字，先換回數字（整詞優先，例如「士林」＝四零）
+const GUIDE_WORDS=[['士林','四零']];
+const GUIDE_HOMO={'鈴':'零','玲':'零','齡':'零','靈':'零','伶':'零','衣':'一','依':'一','醫':'一','伊':'一','壹':'一','兒':'二','而':'二','爾':'二','貳':'二','山':'三','參':'三','傘':'三','叁':'三','寺':'四','似':'四','肆':'四','舞':'五','午':'五','武':'五','伍':'五','溜':'六','流':'六','陸':'六','期':'七','妻':'七','其':'七','棋':'七','柒':'七','吧':'八','巴':'八','爸':'八','疤':'八','捌':'八','酒':'九','久':'九','韭':'九','玖':'九','拾':'十','石':'十','店':'點','電':'點','典':'點'};
+function guideHomo(t){
+  t=String(t);GUIDE_WORDS.forEach(([a,b])=>{t=t.split(a).join(b);});
+  return [...t].map(c=>GUIDE_HOMO[c]||c).join('');
+}
 function parseGuide(raw){
-  const r=items[guided.i];const t=normSpeech(raw);const w=String(raw).trim();
+  const r=items[guided.i];const t=normSpeech(guideHomo(raw));const w=String(raw).trim();
   if(/結束|完成|停止/.test(w))return {cmd:'end'};
   if(/更正|上一|重來|重說|回上|觀戰|關戰|觀站|官戰|更政|耕正|庚正|跟正|更證|改正/.test(w))return {cmd:'prev'};   // iPhone 常把「更正」聽成「觀戰」等
   if(/下一|跳過|略過/.test(w))return {cmd:'next'};
@@ -960,11 +967,29 @@ function guidedResult(e){
   const res=e.results[e.results.length-1];
   if(!res.isFinal){$('gHeard').textContent='聽到：'+res[0].transcript;return;}
   const alts=Array.from(res).map(x=>x.transcript);
-  for(const raw of alts){
-    const act=parseGuide(raw);
-    if(act){$('gHeard').textContent='聽到：'+alts[0];applyGuide(act);return;}
+  const acts=alts.map(parseGuide);
+  if(acts[0]&&acts[0].cmd){$('gHeard').textContent='聽到：'+alts[0];applyGuide(acts[0]);return;}
+  const vals=[...new Set(acts.filter(a=>a&&a.val!==undefined).map(a=>a.val))];
+  if(vals.length){
+    const v=pickGuideVal(vals);
+    $('gHeard').textContent='聽到：'+alts[0]+(v!==vals[0]?'（依上次值改選 '+v+'）':'');
+    applyGuide({val:v});return;
   }
+  const other=acts.find(a=>a);   // 指令或提醒（例如 pH 超出範圍）
+  if(other){$('gHeard').textContent='聽到：'+alts[0];applyGuide(other);return;}
   $('gHeard').textContent='聽到：'+alts[0]+'（沒有數字，請再說一次）';
+}
+function pickGuideVal(vals){   // iPhone 會給好幾個候選結果：依標準和上次值挑最合理的，沒有依據就用第一個
+  const r=items[guided.i],std=String(r[2]).trim(),pv=prevMap[r[0]],p=Number(pv);
+  if(vals.length<2||isValve(r))return vals[0];
+  const hasPrev=pv!==undefined&&String(pv).trim()!==''&&Number.isFinite(p);
+  if(std==='>'&&hasPrev){   // 累計值：大於等於上次、而且最接近上次
+    const ge=vals.filter(v=>Number(v)>=p).sort((a,b)=>(Number(a)-p)-(Number(b)-p));
+    return ge.length?ge[0]:vals[0];
+  }
+  if(std==='='&&hasPrev){const eq=vals.find(v=>Number(v)===p);return eq!==undefined?eq:vals[0];}
+  if(std&&std!=='--'){const ok=vals.find(v=>judgement(v,std,pv).c==='ok');if(ok!==undefined)return ok;}
+  return vals[0];
 }
 function applyGuide(a){
   if(a.warn){$('gHeard').textContent=a.warn;return;}
@@ -1761,7 +1786,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v50（2026-10-27）';
+const APP_VER='v51（2026-10-27）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -2055,6 +2080,8 @@ const HELP=[
 <li>「更正」常被聽成「觀戰」之類的詞，App 也會當成更正；也可以說「上一項」或「重來」。</li>
 <li>說「<b>相同</b>」（或「一樣」「跟上次一樣」）：自動帶入這一項的上次值。沒有上次值時會請你說數字。</li>
 <li><b>⏩ 速度</b>（報數框右上）：填入後等多久跳下一項，分「快 0.6 秒／標準 1.5 秒／慢 2.5 秒／很慢 4 秒」，會記住你的設定；複讀的語速固定不變。</li>
+<li>噪音大時 iPhone 常把數字聽成同音字（例如「酒」＝9、「溜」＝6、「山」＝3、「巴」＝8、「店」＝點、「士林」＝40），App 會自動換回數字。</li>
+<li>iPhone 每次會給好幾個可能的結果，App 會依標準和上次值挑最合理的一個：累計值（標準「&gt;」）挑大於等於上次、最接近上次的；有範圍的標準挑在範圍內的。改選時「聽到：」後面會註明。</li>
 <li>數字很長時，iPhone 有時會當成電話號碼，自動加上「-」或空格（例如 102-326），App 會自動合併成 102326。</li>
 <li>沒有麥克風或聽不清楚時，可以直接在報數框輸入讀值，按「確定 ▶」。</li>
 <li><b>🎧 耳機按鍵</b>（⋯ 更多功能）：按一下＝開始逐項報數／暫停或繼續聆聽；按兩下＝跳過；按三下＝更正。</li>
