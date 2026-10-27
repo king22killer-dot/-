@@ -885,7 +885,7 @@ document.querySelectorAll('[data-col]').forEach(r=>r.addEventListener('input',()
 $('colReset').addEventListener('click',()=>{colW=Object.assign({},COLDEF);saveView();applyCols();});
 applyCols();
 let guided={on:false,i:0,t:null,rt:null,busy:false,noMic:false,paused:false,seq:0};
-const GSPEED=[{n:'快',wait:600,rate:1.3},{n:'標準',wait:1500,rate:1},{n:'慢',wait:2500,rate:0.85},{n:'很慢',wait:4000,rate:0.75}];   // 填入後等多久跳下一項、複讀語速
+const GSPEED=[{n:'快',wait:600},{n:'標準',wait:1500},{n:'慢',wait:2500},{n:'很慢',wait:4000}];   // 填入後等多久跳下一項（不影響複讀語速）
 let gSpeed=Math.min(GSPEED.length-1,Math.max(0,Number(lsGet('wasteInspectionGuideSpeed',1))||0));
 function applyGSpeed(){$('gSpeed').textContent='⏩ 速度：'+GSPEED[gSpeed].n;}
 function isValve(r){return r[0].includes('閥')||String(r[1]).includes('正常');}
@@ -946,7 +946,9 @@ function parseGuide(raw){
     if(/正常|ok|好/i.test(w))return {val:'正常'};
     return null;
   }
-  const nums=t.match(/-?\d+(?:\.\d+)?/g);
+  // iPhone 會把長數字當成電話號碼，加上「-」、空格或括號（例如 102-326），先把數字之間的分隔符號拿掉
+  const tj=t.replace(/(\d)[\s\-‐‑–—−,，、()（）]+(?=\d)/g,'$1');
+  const nums=tj.match(/-?\d+(?:\.\d+)?/g);
   if(!nums)return null;
   const v=nums[nums.length-1];
   if((/ph/i.test(r[0])||String(r[1]).toLowerCase()==='ph')&&(Number(v)<0||Number(v)>14))return {warn:`pH 應在 0–14，聽到 ${v}，請再說一次`};
@@ -1396,7 +1398,7 @@ function speak(text,done){
   let fin=false;const end=()=>{if(fin)return;fin=true;if(done)done();};
   try{
     speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';u.rate=(typeof gSpeed==='number'&&GSPEED[gSpeed])?GSPEED[gSpeed].rate:1;
+    const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';u.rate=1;
     u.onend=end;u.onerror=end;
     speechSynthesis.speak(u);
     setTimeout(end,6000);
@@ -1759,7 +1761,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v49（2026-10-24）';
+const APP_VER='v50（2026-10-27）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -2052,7 +2054,8 @@ const HELP=[
 <li><b>📋 逐項報數</b>：App 依序顯示每個項目，你只要說數字；可說「下一項」「更正」「結束」。pH 超出 0–14 會提醒重說。</li>
 <li>「更正」常被聽成「觀戰」之類的詞，App 也會當成更正；也可以說「上一項」或「重來」。</li>
 <li>說「<b>相同</b>」（或「一樣」「跟上次一樣」）：自動帶入這一項的上次值。沒有上次值時會請你說數字。</li>
-<li><b>⏩ 速度</b>（報數框右上）：填入後等多久跳下一項，分「快 0.6 秒／標準 1.5 秒／慢 2.5 秒／很慢 4 秒」，複讀的語速也會跟著調整，會記住你的設定。</li>
+<li><b>⏩ 速度</b>（報數框右上）：填入後等多久跳下一項，分「快 0.6 秒／標準 1.5 秒／慢 2.5 秒／很慢 4 秒」，會記住你的設定；複讀的語速固定不變。</li>
+<li>數字很長時，iPhone 有時會當成電話號碼，自動加上「-」或空格（例如 102-326），App 會自動合併成 102326。</li>
 <li>沒有麥克風或聽不清楚時，可以直接在報數框輸入讀值，按「確定 ▶」。</li>
 <li><b>🎧 耳機按鍵</b>（⋯ 更多功能）：按一下＝開始逐項報數／暫停或繼續聆聽；按兩下＝跳過；按三下＝更正。</li>
 <li><b>🔊 複讀</b>：辨識完會逐字唸出數值，唸完才跳下一項（語音區的開關）。</li>
