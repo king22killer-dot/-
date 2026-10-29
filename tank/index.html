@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="槽車入料小幫手">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f6f7f9">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>槽車入料小幫手</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mut:#667085;--bd:#d0d5dd;--ac:#1d4ed8;--acx:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111418;--card:#1b2027;--tx:#eceff3;--mut:#98a2b3;--bd:#363d47;--ac:#6ea0ff;--acx:#0b1220}}
+:root[data-theme="dark"]{--bg:#111418;--card:#1b2027;--tx:#eceff3;--mut:#98a2b3;--bd:#363d47;--ac:#6ea0ff;--acx:#0b1220}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 -apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;padding:14px;max-width:640px;margin-inline:auto}
+h1{font-size:20px;margin:6px 0 12px;display:flex;align-items:center;gap:8px}
+h1 img{width:32px;height:32px;border-radius:8px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--mut);margin:8px 0 3px}
+input[type=text],input[type=datetime-local]{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+select{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+.vrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.vrow input{flex:1 1 100%;min-width:0}
+button.sm{flex:1;width:auto;margin:0;padding:10px 12px;font-size:15px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.slot{border:1px dashed var(--bd);border-radius:10px;padding:6px;background:var(--bg)}
+.slot input[type=text]{font-size:13px;padding:6px;margin-bottom:6px}
+.pv{aspect-ratio:4/3;border-radius:8px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px;overflow:hidden;position:relative;cursor:pointer}
+.pv img{width:100%;height:100%;object-fit:cover}
+.pv.tall{aspect-ratio:3/4;max-width:200px;margin:auto}
+.pv.tall img{object-fit:contain}
+.x{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:50%;width:24px;height:24px;font-size:14px}
+button.main,button.sub{width:100%;font:inherit;font-weight:600;padding:13px;border-radius:10px;border:1px solid var(--ac);margin-top:8px}
+button.main{background:var(--ac);color:var(--acx)}
+button.sub{background:transparent;color:var(--ac)}
+.q{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:14px}.q span{flex:1;min-width:0}.q button{border:0;background:transparent;color:var(--mut);font-size:18px}
+#msg{font-size:14px;color:var(--mut);min-height:22px;margin-top:8px;text-align:center}
+</style>
+</head>
+<body>
+<h1><img src="icon-192.png" alt="">槽車入料小幫手</h1>
+
+<div class="card">
+  <label>模板</label>
+  <select id="tpl"></select>
+  <label>槽車項目</label>
+  <input type="text" id="item" value="化學品入料 (IPA)">
+  <div class="grid">
+    <div><label>日期時間</label><input type="datetime-local" id="dt"></div>
+    <div><label>廠商</label><select id="vendor"></select></div>
+  </div>
+  <div class="vrow"><input type="text" id="newV" placeholder="新增廠商名稱"><button class="sub sm" id="addV">新增</button><button class="sub sm" id="delV">刪除所選</button></div>
+</div>
+
+<div class="card">
+  <button class="sub" id="multi" style="margin-top:0">一次選多張（依序填入 1~6，第 7 張為 Check List）</button>
+  <input type="file" id="multiIn" accept="image/*" multiple hidden>
+</div>
+
+<div class="card">
+  <div class="grid" id="slots"></div>
+</div>
+
+<div class="card">
+  <label>Check List 照片（第 2 頁）</label>
+  <div class="pv tall" id="clPv">點此選照片</div>
+  <input type="file" id="clIn" accept="image/*" hidden>
+</div>
+
+<button class="sub" id="addMore">＋ 加入此份，繼續新增下一份</button>
+<div id="queue"></div>
+<button class="sub" id="prev">預覽（A4 列印效果）</button>
+<select id="fmt" style="margin-top:8px"><option value="docx">輸出格式：Word (.docx)</option><option value="pdf">輸出格式：PDF</option></select>
+<button class="main" id="go">產生檔案</button>
+<button class="sub" id="reset">清除全部</button>
+<div id="msg"></div>
+
+<script>
+const APP_VER='v1（2026-10-29）';
+const STEPS=["車輛熄火，鑰匙拔除","車輛前後放置三角錐","輪擋放置","槽車接地確認","人員防護具","銜接管路種類確認"];
+const photos=new Array(6).fill(null); let checklist=null;
+const $=id=>document.getElementById(id);
+const msg=t=>$("msg").textContent=t;
+
+// ---- templates & vendors ----
+const TEMPLATES={
+  ipa:{name:"化學品入料 (IPA)",item:"化學品入料 (IPA)",steps:STEPS,group:"chem",vendor:"德亞瑪"},
+  act:{name:"化學品入料 (ACT)",item:"化學品入料 (ACT)",steps:STEPS,group:"chem",vendor:"關東鑫霖"},
+  solvent:{name:"廢溶劑清運",item:"廢溶劑清運",steps:STEPS,group:"solvent",vendor:"廣青"}
+};
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(_){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}}};
+const DEFV={chem:["德亞瑪","關東鑫霖"],solvent:["廣青","順倉","金鼎浩","圓立"]};
+const vendorsAll=Object.assign({},DEFV,store.get("vendors2",{}));
+if(store.get("vseed",0)<2){DEFV.solvent.forEach(n=>{if(!vendorsAll.solvent.includes(n))vendorsAll.solvent.push(n)});store.set("vendors2",vendorsAll);store.set("vseed",2)}
+const grp=()=>TEMPLATES[$("tpl").value].group;
+function renderVendors(sel){
+  const list=vendorsAll[grp()];
+  const v=$("vendor");v.innerHTML="";
+  list.forEach(n=>{const o=document.createElement("option");o.value=o.textContent=n;v.appendChild(o)});
+  if(sel&&list.includes(sel))v.value=sel;
+}
+Object.entries(TEMPLATES).forEach(([k,t])=>{const o=document.createElement("option");o.value=k;o.textContent=t.name;$("tpl").appendChild(o)});
+renderVendors(TEMPLATES.ipa.vendor);
+$("tpl").onchange=()=>{
+  const t=TEMPLATES[$("tpl").value];
+  $("item").value=t.item;
+  t.steps.forEach((s,i)=>{$("cap"+i).value=`${i+1}. ${s}`});
+  renderVendors(t.vendor);
+};
+$("addV").onclick=()=>{
+  const n=$("newV").value.trim();if(!n)return;
+  const l=vendorsAll[grp()];if(!l.includes(n)){l.push(n);store.set("vendors2",vendorsAll)}
+  renderVendors(n);$("newV").value="";
+};
+$("delV").onclick=()=>{
+  const n=$("vendor").value,g=grp();if(!n||vendorsAll[g].length<=1)return;
+  vendorsAll[g]=vendorsAll[g].filter(x=>x!==n);store.set("vendors2",vendorsAll);renderVendors();
+};
+
+// default datetime = now
+(function(){const d=new Date(),p=n=>String(n).padStart(2,"0");$("dt").value=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`})();
+
+// slots UI
+const slotsEl=$("slots");
+STEPS.forEach((s,i)=>{
+  const div=document.createElement("div");div.className="slot";
+  div.innerHTML=`<input type="text" id="cap${i}" value="${i+1}. ${s}"><div class="pv" id="pv${i}">點此選照片</div><input type="file" accept="image/*" id="in${i}" hidden>`;
+  slotsEl.appendChild(div);
+  $("pv"+i).onclick=e=>{if(e.target.tagName!=="BUTTON")$("in"+i).click()};
+  $("in"+i).onchange=async e=>{if(e.target.files[0]){await setPhoto(i,e.target.files[0]);e.target.value=""}};
+});
+$("clPv").onclick=e=>{if(e.target.tagName!=="BUTTON")$("clIn").click()};
+$("clIn").onchange=async e=>{if(e.target.files[0]){await setChecklist(e.target.files[0]);e.target.value=""}};
+$("multi").onclick=()=>$("multiIn").click();
+$("multiIn").onchange=async e=>{
+  const fs=[...e.target.files];msg("處理照片中…");
+  for(let i=0;i<fs.length&&i<7;i++){ if(i<6) await setPhoto(i,fs[i]); else await setChecklist(fs[i]); }
+  e.target.value="";msg(fs.length>7?"只取前 7 張":"");
+};
+$("reset").onclick=()=>{photos.fill(null);checklist=null;STEPS.forEach((_,i)=>showPv("pv"+i,null,i));showPv("clPv",null,-1);msg("")};
+
+function showPv(id,data,i){
+  const el=$(id);el.innerHTML="";
+  if(!data){el.textContent="點此選照片";return}
+  const im=document.createElement("img");im.src=data.url;el.appendChild(im);
+  const b=document.createElement("button");b.className="x";b.textContent="✕";
+  b.onclick=ev=>{ev.stopPropagation();if(i>=0)photos[i]=null;else checklist=null;showPv(id,null,i)};
+  el.appendChild(b);
+}
+
+async function load(file){
+  try{return await createImageBitmap(file,{imageOrientation:"from-image"})}catch(_){
+    return await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=URL.createObjectURL(file)});
+  }
+}
+// returns {blob,w,h,url}; cover=true crops to 4:3
+async function proc(file,cover){
+  const im=await load(file);const sw=im.width,sh=im.height;
+  let cw,ch,sx=0,sy=0,sW=sw,sH=sh;
+  if(cover){cw=720;ch=540;const r=4/3;if(sw/sh>r){sW=sh*r;sx=(sw-sW)/2}else{sH=sw/r;sy=(sh-sH)/2}}
+  else{const m=1280,k=Math.min(1,m/Math.max(sw,sh));cw=Math.round(sw*k);ch=Math.round(sh*k)}
+  const c=document.createElement("canvas");c.width=cw;c.height=ch;
+  const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,cw,ch);g.drawImage(im,sx,sy,sW,sH,0,0,cw,ch);
+  const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",0.72));
+  return {blob,w:cw,h:ch,url:URL.createObjectURL(blob)};
+}
+async function setPhoto(i,f){photos[i]=await proc(f,true);showPv("pv"+i,photos[i],i)}
+async function setChecklist(f){checklist=await proc(f,false);showPv("clPv",checklist,-1)}
+
+// ---------- docx builder ----------
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const EMU=360000;
+function run(t,o={}){return `<w:r><w:rPr><w:rFonts w:ascii="新細明體" w:eastAsia="新細明體" w:hAnsi="新細明體" w:cs="新細明體"/>${o.b?"<w:b/>":""}${o.c?`<w:color w:val="${o.c}"/>`:""}${o.u?'<w:u w:val="single"/>':""}<w:sz w:val="${o.sz||24}"/></w:rPr><w:t xml:space="preserve">${esc(t)}</w:t></w:r>`}
+function para(inner,o={}){return `<w:p><w:pPr><w:spacing w:before="40" w:after="40"/>${o.jc?`<w:jc w:val="${o.jc}"/>`:""}</w:pPr>${inner}</w:p>`}
+function cell(w,content,span){return `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${span?`<w:gridSpan w:val="${span}"/>`:""}<w:vAlign w:val="center"/></w:tcPr>${content}</w:tc>`}
+function pic(rid,id,cx,cy){
+  return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${id}" name="Picture ${id}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${id}" name="img${id}.jpg"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
+}
+
+function snapshot(){
+  return {item:$("item").value,dt:$("dt").value,vendor:$("vendor").value,
+    caps:STEPS.map((_,i)=>$("cap"+i).value),photos:photos.slice(),checklist};
+}
+async function build(entries){
+  const zip=new JSZip();const rels=[];let n=0;
+  const addImg=async d=>{n++;zip.file(`word/media/img${n}.jpg`,d.blob);rels.push(`<Relationship Id="rId${n+10}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/img${n}.jpg"/>`);return `rId${n+10}`};
+  const CW=5103;
+  let body="";
+  for(let ei=0;ei<entries.length;ei++){
+    const e=entries[ei];
+    const dt=e.dt.replace("T"," ").replace(/-/g,"/");
+    let rows="";
+    rows+=`<w:tr><w:trPr><w:trHeight w:val="726" w:hRule="atLeast"/></w:trPr>${cell(CW*2,para(run("槽車項目：",{b:1,sz:32})+run(e.item,{b:1,c:"0000FF",sz:32})),2)}</w:tr>`;
+    rows+=`<w:tr><w:trPr><w:trHeight w:val="567" w:hRule="atLeast"/></w:trPr>${cell(CW,para(run("日期時間："+dt,{sz:24})))}${cell(CW,para(run("廠商："+e.vendor,{sz:24})))}</w:tr>`;
+    for(let r=0;r<3;r++){
+      let cap="",img="";
+      for(let k=0;k<2;k++){
+        const i=r*2+k;
+        cap+=cell(CW,para(run(e.caps[i],{c:"0000FF",sz:24})));
+        let inner;
+        if(e.photos[i]){const rid=await addImg(e.photos[i]);inner=para(pic(rid,n,Math.round(8.5*EMU),Math.round(6.375*EMU)),{jc:"center"})}
+        else inner=para("");
+        img+=cell(CW,inner);
+      }
+      rows+=`<w:tr><w:trPr><w:cantSplit/></w:trPr>${cap}</w:tr><w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="3760" w:hRule="atLeast"/></w:trPr>${img}</w:tr>`;
+    }
+    const tbl=`<w:tbl><w:tblPr><w:tblW w:w="${CW*2}" w:type="dxa"/><w:jc w:val="center"/><w:tblBorders>${["top","left","bottom","right","insideH","insideV"].map(x=>`<w:${x} w:val="single" w:sz="6" w:space="0" w:color="000000"/>`).join("")}</w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="${CW}"/><w:gridCol w:w="${CW}"/></w:tblGrid>${rows}</w:tbl>`;
+    let page2="";
+    if(e.checklist){
+      const rid=await addImg(e.checklist);
+      const maxW=16*EMU,maxH=22*EMU,k=Math.min(maxW/e.checklist.w,maxH/e.checklist.h);
+      page2=`<w:p><w:r><w:br w:type="page"/></w:r></w:p>`+para(pic(rid,n,Math.round(e.checklist.w*k),Math.round(e.checklist.h*k)),{jc:"center"});
+    }
+    if(ei>0)body+=`<w:p><w:r><w:br w:type="page"/></w:r></w:p>`;
+    body+=tbl+page2;
+  }
+  const doc=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="850" w:right="850" w:bottom="850" w:left="850" w:header="400" w:footer="400" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  zip.file("[Content_Types].xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`);
+  zip.file("_rels/.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+  zip.file("word/_rels/document.xml.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${rels.join("")}</Relationships>`);
+  zip.file("word/document.xml",doc);
+  return zip.generateAsync({type:"blob",compression:"DEFLATE",mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+}
+
+// ---- queue: several reports in one Word file ----
+const queue=[];
+function renderQueue(){
+  const q=$("queue");q.innerHTML="";
+  queue.forEach((e,i)=>{
+    const d=document.createElement("div");d.className="q";
+    const sp=document.createElement("span");
+    sp.textContent=`${i+1}. ${e.item}｜${e.vendor}｜${e.photos.filter(Boolean).length} 張照片`;
+    const x=document.createElement("button");x.textContent="✕";x.onclick=()=>{queue.splice(i,1);renderQueue()};
+    d.append(sp,x);q.appendChild(d);
+  });
+}
+const hasCurrent=()=>photos.some(Boolean)||checklist;
+$("addMore").onclick=()=>{
+  if(!hasCurrent()){msg("這份還沒有照片");return}
+  queue.push(snapshot());renderQueue();
+  photos.fill(null);checklist=null;
+  STEPS.forEach((_,i)=>showPv("pv"+i,null,i));showPv("clPv",null,-1);
+  const d=new Date(),p=n=>String(n).padStart(2,"0");
+  $("dt").value=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  msg(`已加入第 ${queue.length} 份，可切換模板繼續新增`);
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+
+// ---- A4 print preview ----
+function getEntries(){const en=queue.slice();if(hasCurrent()||!en.length)en.push(snapshot());return en}
+const pvStyle=document.createElement("style");
+pvStyle.textContent=`.pg{font-family:'新細明體','PMingLiU','MingLiU','Songti TC',serif;font-size:12pt;color:#000;background:#fff;width:21cm;height:29.7cm;padding:1.5cm;box-sizing:border-box;overflow:hidden;transform-origin:top left;box-shadow:0 2px 10px rgba(0,0,0,.4)}.pg table{border-collapse:collapse;width:18cm;table-layout:fixed;border:.75pt solid #000;margin:0 auto}.pg td{border:.75pt solid #000;padding:0 .19cm;vertical-align:middle}.pg p{margin:2pt 0;line-height:1.2}.pg img{display:block;margin:0 auto}.pg .b{color:#0000ff}`;
+document.head.appendChild(pvStyle);
+function pv1(e){
+  const dt=e.dt.replace("T"," ").replace(/-/g,"/");
+  let h=`<table><tr style="height:1.28cm"><td colspan="2"><p style="font-size:16pt;font-weight:bold">槽車項目：<span class="b">${esc(e.item)}</span></p></td></tr>`;
+  h+=`<tr style="height:1cm"><td><p>日期時間：${esc(dt)}</p></td><td><p>廠商：${esc(e.vendor)}</p></td></tr>`;
+  for(let r=0;r<3;r++){
+    let cap="",img="";
+    for(let k=0;k<2;k++){
+      const i=r*2+k;
+      cap+=`<td><p class="b">${esc(e.caps[i])}</p></td>`;
+      img+=e.photos[i]?`<td><p><img src="${e.photos[i].url}" style="width:8.5cm;height:6.375cm"></p></td>`:`<td><p>&nbsp;</p></td>`;
+    }
+    h+=`<tr>${cap}</tr><tr style="height:6.63cm">${img}</tr>`;
+  }
+  return h+"</table>";
+}
+function pv2(e){
+  const c=e.checklist,k=Math.min(16/c.w,22/c.h);
+  return `<p><img src="${c.url}" style="width:${c.w*k}cm;height:${c.h*k}cm"></p>`;
+}
+const ov=document.createElement("div");
+ov.style.cssText="position:fixed;inset:0;z-index:99;background:#555;overflow:auto;display:none;-webkit-overflow-scrolling:touch";
+document.body.appendChild(ov);
+$("prev").onclick=()=>{
+  const en=getEntries();ov.innerHTML="";
+  const sc=Math.min(1,(window.innerWidth-16)/793.7);
+  const bar=document.createElement("div");
+  bar.style.cssText="position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;background:#222;color:#fff;font:15px -apple-system,sans-serif";
+  const pages=[];en.forEach(e=>{pages.push(pv1(e));if(e.checklist)pages.push(pv2(e))});
+  bar.innerHTML=`<span>預覽：共 ${pages.length} 頁</span>`;
+  const cl=document.createElement("button");cl.textContent="關閉";
+  cl.style.cssText="font:inherit;padding:6px 14px;border-radius:8px;border:0;background:#fff;color:#000";
+  cl.onclick=()=>{ov.style.display="none";document.body.style.overflow=""};
+  bar.appendChild(cl);ov.appendChild(bar);
+  pages.forEach(h=>{
+    const w=document.createElement("div");
+    w.style.cssText=`width:${793.7*sc}px;height:${1122.5*sc}px;margin:12px auto`;
+    const pg=document.createElement("div");pg.className="pg";pg.style.transform=`scale(${sc})`;pg.innerHTML=h;
+    w.appendChild(pg);ov.appendChild(w);
+  });
+  ov.style.display="block";document.body.style.overflow="hidden";ov.scrollTop=0;
+};
+
+async function buildPdf(entries){
+  if(!window.jspdf||!window.html2canvas)throw new Error("PDF 元件載入失敗，請檢查網路");
+  const pages=[];entries.forEach(e=>{pages.push(pv1(e));if(e.checklist)pages.push(pv2(e))});
+  const host=document.createElement("div");host.style.cssText="position:absolute;left:-10000px;top:0";document.body.appendChild(host);
+  const pdf=new window.jspdf.jsPDF({unit:"mm",format:"a4",orientation:"portrait",compress:true});
+  try{
+    for(let i=0;i<pages.length;i++){
+      msg(`PDF 產生中 ${i+1}/${pages.length}…`);
+      const pg=document.createElement("div");pg.className="pg";pg.style.boxShadow="none";pg.innerHTML=pages[i];host.appendChild(pg);
+      await Promise.all([...pg.querySelectorAll("img")].map(im=>im.complete?1:new Promise(r=>{im.onload=im.onerror=r})));
+      const c=await html2canvas(pg,{scale:2,backgroundColor:"#ffffff",useCORS:true});
+      if(i)pdf.addPage();
+      pdf.addImage(c.toDataURL("image/jpeg",0.82),"JPEG",0,0,210,297,undefined,"FAST");
+      host.removeChild(pg);
+    }
+  }finally{host.remove()}
+  return pdf.output("blob");
+}
+
+// 儲存檔案：iPhone 用分享面板（可存到「檔案」或傳 LINE），不支援時改用下載
+async function saveFile(blob,name){
+  const file=new File([blob],name,{type:blob.type});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:name});return "完成"}
+    catch(e){if(e&&e.name==="AbortError")return "已取消儲存"}
+  }
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),60000);
+  return "已產生檔案";
+}
+
+$("go").onclick=async()=>{
+  if(typeof JSZip==="undefined"){msg("元件載入失敗，請檢查網路");return}
+  msg("產生中…");
+  try{
+    const entries=queue.slice();if(hasCurrent()||!entries.length)entries.push(snapshot());
+    const isPdf=$("fmt").value==="pdf";
+    const blob=isPdf?await buildPdf(entries):await build(entries);
+    const name=entries[0].dt.slice(0,10)+" B廠槽車入料及人員作業照片."+(isPdf?"pdf":"docx");
+    msg(await saveFile(blob,name));
+  }catch(e){msg("產生失敗："+e.message)}
+};
+
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+</body>
+</html>

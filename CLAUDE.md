@@ -12,6 +12,7 @@ iPhone 用的夜班抄表網頁 App。純靜態網站，沒有建置步驟，部
 - `.nojekyll`：讓 GitHub Pages 直接發布檔案（不要刪）。
 - `netlify.toml`：舊的 Netlify 設定，GitHub Pages 不會用到（GitHub Pages 會快取約 10 分鐘，更新後可能要等一下才拿到新版）。
 - `docs/`：Firebase 設定說明、共用設定備份。
+- `tank/`：另一個獨立 App「槽車入料小幫手」（網址 https://king22killer-dot.github.io/-/tank/），把槽車入料照片排成 Word／PDF 報告。有自己的 `index.html`、`manifest.json`、`sw.js`（`CACHE` 名稱 `tank-vN`，跟著 `tank/index.html` 的 `APP_VER` 更新）、圖示。兩個 SW 的快取清除只刪自己前綴（`waste-inspection-`／`tank-`）的快取，不要改回刪全部。
 
 ## 每次修改的規則
 1. 改 `index.html` 裡的 `const APP_VER='vNN（YYYY-MM-DD）';`，版本號加 1。
