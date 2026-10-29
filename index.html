@@ -3,13 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#18181B">
+<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="夜班小幫手">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>夜班小幫手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300,0,0&display=block">
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC",sans-serif;color:#111827;background:#f3f4f6}
 *{box-sizing:border-box}body{margin:0;background:#f3f4f6}
@@ -91,7 +95,144 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
 .hidden{display:none!important}
 .notice{font-size:13px;line-height:1.5;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:10px;color:#9a3412}
 @media(max-width:600px){main{padding-left:var(--px,2px);padding-right:var(--px,2px)}.card{padding:10px calc(var(--px,2px) + 4px)}header{padding-left:10px;padding-right:10px}.actions{display:grid;grid-template-columns:1fr 1fr}.actions button{width:100%}}
+/* ===== 深色極簡主題（底色 #18181B、點綴紫 #8B5CF6）：只改外觀，不動版面邏輯 ===== */
+:root{--bg:#18181B;--surface:#222226;--surface-2:#2A2A30;--surface-3:#34343B;--border:rgba(255,255,255,.07);--border-2:rgba(255,255,255,.12);
+  --text:#F4F4F5;--muted:#A1A1AA;--faint:#71717A;--accent:#8B5CF6;--accent-2:#A78BFA;--accent-deep:#7C3AED;--accent-soft:rgba(139,92,246,.16);
+  --ok:#4ADE80;--bad:#F87171;--warn:#FBBF24;--rose:#F43F5E;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 30px -12px rgba(0,0,0,.55);--shadow-lg:0 2px 4px rgba(0,0,0,.35),0 18px 40px -16px rgba(0,0,0,.7);
+  --ease:cubic-bezier(.2,.7,.2,1);color-scheme:dark;color:var(--text);background:var(--bg);accent-color:var(--accent);
+  font-family:"Inter",-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC",sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);letter-spacing:.01em}
+::selection{background:var(--accent-soft)}
+/* 圖示：字型載入後才顯示（沒載入時不會出現英文字） */
+.ms,[data-icon]::before{font-family:"Material Symbols Outlined";font-weight:300;font-style:normal;font-size:1.25em;line-height:1;letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;-webkit-font-feature-settings:"liga";font-feature-settings:"liga";-webkit-font-smoothing:antialiased;font-variation-settings:"opsz" 24,"wght" 300,"FILL" 0,"GRAD" 0}
+.ms{display:inline-block;vertical-align:-.22em;margin-right:.4em;color:var(--accent-2)}
+[data-icon]::before{content:attr(data-icon);display:none;vertical-align:-.24em}
+html.ic [data-icon]::before{display:inline-block}
+html:not(.ic) .ms{display:none}
+button[data-icon]::before{margin-right:.38em}
+button[data-icon=""]::before,#nbDrag::before,#nbFine::before,button.cu::before,button.cd::before{margin-right:0}
+summary[data-icon]::before{margin-right:.45em;color:var(--accent-2)}
+/* 頁首 */
+header{background:rgba(24,24,27,.78);-webkit-backdrop-filter:saturate(160%) blur(18px);backdrop-filter:saturate(160%) blur(18px);border-bottom:1px solid var(--border);padding:calc(18px + env(safe-area-inset-top)) 20px 16px}
+header h1{font-size:21px;font-weight:700;letter-spacing:.02em;margin:0 0 6px;display:flex;align-items:center}
+header h1 .ms{font-size:26px;margin-right:10px}
+header p{color:var(--muted);font-size:13px}
+main{padding-top:20px}
+/* 卡片：懸浮感 */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+#voiceCard.pinned{box-shadow:var(--shadow-lg);border-color:var(--border-2)}
+body.nbOpen.asOn #voiceCard.pinned:not(.guiding){box-shadow:var(--shadow)}
+.row{gap:10px}
+label{color:var(--muted);font-size:13px;margin-bottom:8px;letter-spacing:.02em}
+.small{color:var(--muted)}
+strong{font-weight:650}
+/* 輸入框 */
+input,textarea,select{background:var(--surface-2);color:var(--text);border:1px solid var(--border-2);border-radius:12px;padding:12px 14px;transition:border-color .2s var(--ease),box-shadow .2s var(--ease),background .2s var(--ease)}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);background:#2E2E35}
+input[type=checkbox],input[type=radio]{accent-color:var(--accent)}
+input[type=range]{background:transparent;border:0;box-shadow:none;padding:0}
+input[type=color]{background:transparent}
+/* 按鍵：平滑過渡、按下回饋 */
+button{border-radius:14px;padding:11px 16px;min-height:46px;font-weight:550;letter-spacing:.02em;display:inline-flex;align-items:center;justify-content:center;
+  transition:background-color .22s var(--ease),color .22s var(--ease),box-shadow .22s var(--ease),transform .14s var(--ease),filter .22s var(--ease),border-color .22s var(--ease);touch-action:manipulation}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.primary{background:linear-gradient(180deg,#9466F7,var(--accent-deep));color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 8px 20px -10px rgba(139,92,246,.8)}
+.secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+.danger{background:rgba(248,113,113,.1);color:#FCA5A5;border:1px solid rgba(248,113,113,.18)}
+.voice{background:linear-gradient(180deg,#F75F78,#E11D48);color:#fff;box-shadow:0 8px 20px -10px rgba(244,63,94,.8)}
+.voice.recording{background:#9F1239}
+.secondary.on,#earBtn.on{background:var(--accent-soft);color:var(--accent-2);border-color:rgba(139,92,246,.35)}
+@media (hover:hover){
+  .primary:hover{filter:brightness(1.08);box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 12px 26px -10px rgba(139,92,246,.9)}
+  .secondary:hover{background:var(--surface-3);border-color:var(--border-2)}
+  .danger:hover{background:rgba(248,113,113,.16)}
+  .voice:hover{filter:brightness(1.07)}
+  .tab:hover{background:var(--surface-3)}
+  .chip:hover{border-color:var(--accent-2)}
+}
+/* 狀態列、提示 */
+.status{background:var(--surface-2);color:var(--muted);border:1px solid var(--border);border-radius:14px;padding:11px 14px}
+#message{color:var(--text)}
+.notice{background:var(--surface-2);border:1px solid var(--border);color:#D4D4D8;border-radius:16px;padding:16px}
+.notice strong{color:var(--text)}
+.badge{border-radius:999px;padding:5px 12px}
+.badge-night{background:var(--accent-soft);color:var(--accent-2);border:1px solid rgba(139,92,246,.3)}
+/* 分頁標籤 */
+.tabbar{gap:8px;padding-bottom:8px}
+.tab{background:var(--surface-2);color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:9px 18px;min-height:42px}
+.tab.active{background:var(--accent-soft);color:#fff;border-color:rgba(139,92,246,.55);box-shadow:0 0 0 1px rgba(139,92,246,.25) inset}
+.tab.add{background:transparent;color:var(--accent-2);border:1px dashed rgba(139,92,246,.45)}
+/* 展開選單 */
+.colctl{margin:12px 0}.colctl summary{color:var(--text);font-size:14px;padding:10px 0;list-style:none;display:flex;align-items:center}
+.colctl summary::-webkit-details-marker{display:none}
+.colctl summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);transform:rotate(45deg);transition:transform .2s var(--ease)}
+.colctl[open]>summary::after{transform:rotate(-135deg)}
+.colctl .cr span,.colctl .cr em{color:var(--muted)}
+/* 報數框 */
+.gbox{background:linear-gradient(180deg,rgba(139,92,246,.10),rgba(139,92,246,.03));border:1px solid rgba(139,92,246,.35);border-radius:18px;padding:16px}
+.gbox #gName{font-size:20px;letter-spacing:.01em}
+.gbox #gVal{font-size:24px;font-weight:600}
+.gbtns{gap:8px;margin-top:10px}.gbtns button{min-height:48px}
+#gProg{color:var(--accent-2)}
+/* 表格 */
+.tablewrap{border:1px solid var(--border);border-radius:16px;background:var(--surface)}
+th{background:#26262B;color:var(--muted);font-weight:600;font-size:12.5px;letter-spacing:.03em;border-bottom:1px solid var(--border-2)}
+th,td{border-bottom:1px solid var(--border);padding:10px 6px}
+tbody tr{transition:background-color .2s var(--ease)}
+td input,td select{padding:10px 10px;border-radius:10px}
+.prevcell{background:transparent;color:var(--muted)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.na{color:var(--faint)}
+tr.miss td{background:rgba(251,191,36,.08)}
+.flash td{animation:fl2 1.4s var(--ease)}@keyframes fl2{from{background:rgba(139,92,246,.35)}to{background:transparent}}
+tr.picked td{background:var(--accent-soft)}
+tr.drop-before td{box-shadow:inset 0 3px 0 var(--accent)}tr.drop-after td{box-shadow:inset 0 -3px 0 var(--accent)}
+td.c-sel{background:var(--surface)}th.c-sel{background:#26262B}
+.drag{background:var(--surface-2);color:var(--muted);border:1px solid var(--border);border-radius:12px}
+.dghost{background:var(--accent-deep);color:#fff;border-radius:12px;box-shadow:var(--shadow-lg)}
+#selBar{background:rgba(34,34,38,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(139,92,246,.4);border-radius:16px;padding:10px 12px;box-shadow:var(--shadow-lg)}
+/* 類別、欄位標籤 */
+.chips{gap:8px}
+.chip{background:var(--surface-2);color:var(--text);border:1.5px solid var(--cc,#52525B);border-radius:999px;padding:6px 14px;min-height:38px;font-weight:500}
+.chip.off{background:transparent;color:var(--faint);border-style:dashed}
+/* 確定列（鍵盤上方） */
+#numBar{background:rgba(34,34,38,.94);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--border-2);box-shadow:0 -10px 30px -12px rgba(0,0,0,.7);gap:8px;padding:8px 12px}
+#numBar.inline{border:1px solid var(--border-2);border-radius:16px}
+#numBar span{color:var(--muted)}
+#numBar #nbDrag{background:var(--surface-3);border-radius:12px}
+#nbFine{background:var(--surface-3);color:var(--accent-2)}#nbFine.on{background:var(--accent);color:#fff}
+#rvBox small{color:var(--muted)}
+#rvHint{background:rgba(24,24,27,.94);color:var(--accent-2);border:1px solid var(--border-2);border-radius:12px}
+/* 其他區塊 */
+.history-item{border-top:1px solid var(--border);padding:14px 0}
+.hbody{color:#D4D4D8}.hbody code{background:var(--surface-3);color:var(--accent-2)}.hbody .note{background:rgba(251,191,36,.08);color:#FDE68A;border:1px solid rgba(251,191,36,.18);border-radius:12px}
+.hbody b{color:var(--text)}
+pre{color:var(--text)}
+/* 抄表單：保留紙張樣式（白底），方便對照列印結果 */
+#sheetBody{background:#fff;color:#111827;border-radius:16px;padding:14px;margin-top:12px}
+#sheetBody .sheet th{background:#f1f5f9;color:#0f172a}#sheetBody .sheet td{color:#111827}
+#sheetBody input{background:#fff;color:#111827;border-color:#cbd5e1}
+@media print{body.printmode,body.printmode main{background:#fff!important}body.printmode #sheetBody{padding:0;border-radius:0}}
+th,td{padding:8px 5px}td input,td select{padding:9px 8px}
+/* 報數框上方的設定鍵：小一點，不要佔太多高度 */
+#guide .row:first-child>span button{min-height:36px;padding:6px 12px;font-size:14px;border-radius:12px}
+/* 確定列 */
+#numBar #nbPrev{flex:0 0 92px;padding:4px 8px;font-size:13px;white-space:nowrap}
+#numBar button{border-radius:12px}
+@media(max-width:600px){
+  .card{padding:18px calc(var(--px,2px) + 14px);border-radius:18px}
+  .card:has(.tablewrap){padding-left:calc(var(--px,2px) + 6px);padding-right:calc(var(--px,2px) + 6px)}   /* 表格卡片：左右留白少一點，讓欄位放得下 */
+  .card:has(.tablewrap)>.row:first-child{padding:0 8px}
+  header{padding-left:18px;padding-right:18px}.actions{gap:10px}
+}
 </style>
+<script>(function(){   // 圖示字型「真的下載完成」才顯示圖示；沒網路時只顯示文字，不會出現 save、mic 這類英文字
+  var h=document.documentElement,chk=function(){try{var ok=false;document.fonts.forEach(function(f){if(f.family.replace(/["']/g,'')==='Material Symbols Outlined'&&f.status==='loaded')ok=true;});if(ok)h.classList.add('ic');}catch(e){}};
+  try{if(document.fonts){document.fonts.load('24px "Material Symbols Outlined"','save').then(chk,chk);document.fonts.ready.then(chk);document.fonts.addEventListener&&document.fonts.addEventListener('loadingdone',chk);}}catch(e){}
+})();</script>
 <script src="firebase-config.js"></script>
 <script>
 (function(){try{
@@ -108,7 +249,7 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
 </head>
 <body>
 <header>
-  <h1>🌙 夜班小幫手</h1>
+  <h1><span class="ms" aria-hidden="true">dark_mode</span>夜班小幫手</h1>
   <p>語音填表・自動判斷・可新增/刪除項目・歷史紀錄</p>
 </header>
 
@@ -130,45 +271,45 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
     <label>抄表分頁</label>
     <div class="tabbar" id="tabbar"></div>
     <details class="colctl">
-      <summary>⚙ 管理分頁（重新命名／刪除）</summary>
+      <summary data-icon="tune">管理分頁（重新命名／刪除）</summary>
       <div class="row" style="margin-top:6px">
-        <button id="renameTabBtn" class="secondary" type="button">✏️ 重新命名</button>
-        <button id="delTabBtn" class="danger" type="button">🗑 刪除此分頁</button>
+        <button id="renameTabBtn" data-icon="edit" class="secondary" type="button">重新命名</button>
+        <button id="delTabBtn" data-icon="delete" class="danger" type="button">刪除此分頁</button>
       </div>
     </details>
     <div id="tabForm" class="hidden" style="margin-top:10px">
       <input id="tabName" type="text" placeholder="分頁名稱，例如 P3、藥品區" maxlength="20">
       <label id="copyWrap" style="margin:8px 0 0"><input id="tabCopy" type="checkbox" style="width:auto;margin-right:6px">複製目前分頁的項目（不含讀值）</label>
       <div class="row" style="margin-top:8px">
-        <button id="tabOk" class="primary" type="button">確定</button>
-        <button id="tabCancel" class="secondary" type="button">取消</button>
+        <button id="tabOk" data-icon="check" class="primary" type="button">確定</button>
+        <button id="tabCancel" data-icon="close" class="secondary" type="button">取消</button>
       </div>
     </div>
   </section>
 
   <section class="card pinned" id="voiceCard">
-    <div class="row vhead" style="justify-content:space-between;margin-bottom:6px"><strong style="font-size:14px">🎙️ 語音報數</strong><span class="row" style="gap:6px;flex-wrap:nowrap"><button id="rbBtn" class="secondary" type="button" style="min-height:34px;padding:4px 10px">🔊 複讀：關</button><button id="rbRateBtn" class="secondary" type="button" style="min-height:34px;padding:4px 10px">🗣 語速：正常</button></span></div>
+    <div class="row vhead" style="justify-content:space-between;margin-bottom:6px"><strong style="font-size:15px"><span class="ms" aria-hidden="true">mic</span>語音報數</strong><span class="row" style="gap:6px;flex-wrap:nowrap"><button id="rbBtn" data-icon="volume_off" class="secondary" type="button" style="min-height:34px;padding:4px 10px">複讀：關</button><button id="rbRateBtn" data-icon="speed" class="secondary" type="button" style="min-height:34px;padding:4px 10px">語速：正常</button></span></div>
     <div id="guide" class="gbox hidden">
       <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:6px">
         <div class="grow" style="flex:1 1 200px"><span class="small" id="gProg"></span><div id="gName"></div></div>
-        <span class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end;flex:0 1 auto;margin-left:auto"><button id="gSpeed" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">⏩ 速度：標準</button><button id="gRb" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">🔊 複讀：關</button><button id="gRbRate" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">🗣 語速：正常</button><button id="gMin" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">▲ 收合</button></span>
+        <span class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-end;flex:0 1 auto;margin-left:auto"><button id="gSpeed" data-icon="timer" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">速度：標準</button><button id="gRb" data-icon="volume_off" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">複讀：關</button><button id="gRbRate" data-icon="speed" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">語速：正常</button><button id="gMin" data-icon="expand_less" class="secondary" type="button" style="min-height:34px;padding:4px 10px;flex:none">收合</button></span>
       </div>
       <div class="small gx"><span id="gMeta"></span><span id="gHist"></span></div>
-      <div id="gLast" class="gx" style="font-size:13px;margin:6px 0;padding:4px 8px;background:#fff;border-radius:8px;border:1px solid #bfdbfe"></div>
+      <div id="gLast" class="gx" style="font-size:13px;margin:8px 0;padding:8px 12px;background:var(--surface-2);border-radius:12px;border:1px solid var(--border)"></div>
       <div class="row" style="margin-top:6px;flex-wrap:nowrap">
         <input id="gVal" inputmode="decimal" placeholder="讀值" class="grow">
-        <button id="gOk" class="primary" type="button" style="flex:none">確定 ▶</button>
+        <button id="gOk" data-icon="check" class="primary" type="button" style="flex:none">確定</button>
       </div>
       <div class="small gx" id="gHeard" style="margin:6px 0 0;min-height:18px"></div>
       <div class="gbtns">
-        <button id="gMic" class="voice" type="button">🎙️ 說數字</button>
-        <button id="gPrev" class="secondary" type="button">✏️ 更正</button>
-        <button id="gSkip" class="secondary" type="button">跳過 ▶</button>
-        <button id="gEnd" class="secondary" type="button">結束</button>
+        <button id="gMic" data-icon="mic" class="voice" type="button">說數字</button>
+        <button id="gPrev" data-icon="undo" class="secondary" type="button">更正</button>
+        <button id="gSkip" data-icon="skip_next" class="secondary" type="button">跳過</button>
+        <button id="gEnd" data-icon="stop_circle" class="secondary" type="button">結束</button>
       </div>
     </div>
     <div class="row vbtns" style="margin-top:10px">
-      <button id="guideBtn" class="primary" type="button">📋 逐項報數</button>
+      <button id="guideBtn" data-icon="record_voice_over" class="primary" type="button">逐項報數</button>
       <span id="voiceStatus" class="status grow">按「逐項報數」開始</span>
     </div>
   </section>
@@ -176,21 +317,21 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
   <section class="card">
     <div class="row" style="justify-content:space-between;margin-bottom:10px">
       <strong id="itemsTitle">巡檢項目</strong>
-      <span class="row" style="gap:6px;flex-wrap:nowrap"><button id="autoScrollBtn" class="secondary" type="button" style="min-height:40px;padding:6px 10px;font-size:13px">↕ 自動捲動：關</button><button id="autoFineBtn" class="secondary hidden" type="button" style="min-height:40px;padding:6px 10px;font-size:13px">🎯 微調</button><button id="addBtn" class="primary" type="button">＋ 新增項目</button></span>
+      <span class="row" style="gap:6px;flex-wrap:nowrap"><button id="autoScrollBtn" data-icon="swap_vert" class="secondary" type="button" style="min-height:40px;padding:6px 10px;font-size:13px">自動捲動：關</button><button id="autoFineBtn" data-icon="my_location" class="secondary hidden" type="button" style="min-height:40px;padding:6px 10px;font-size:13px">微調</button><button id="addBtn" data-icon="add" class="primary" type="button">新增項目</button></span>
     </div>
     <details class="colctl" id="tblSettings">
-      <summary>⚙ 表格設定（各分頁獨立：顯示欄位／類別／欄寬／排序）</summary>
+      <summary data-icon="settings">表格設定（各分頁獨立：顯示欄位／類別／欄寬／排序）</summary>
       <div class="small" style="margin-top:8px">顯示欄位（只影響目前分頁；點一下隱藏／顯示整欄）。「選取／拖曳」「操作」預設隱藏，要整理順序或刪除項目時再打開</div>
       <div id="colChips" class="chips" style="margin-top:4px"></div>
       <div class="small">顯示類別（隱藏後不會出現在表格、逐項報數與漏填檢查，資料仍保留）</div>
       <div id="catChips" class="chips"></div>
-      <div class="row" style="margin:6px 0"><button id="sortCatBtn" class="secondary" type="button">依類別排列</button></div>
+      <div class="row" style="margin:6px 0"><button id="sortCatBtn" data-icon="sort" class="secondary" type="button">依類別排列</button></div>
       <details class="colctl">
-        <summary>🏷 編輯類別（新增／改名／顏色／順序／刪除）</summary>
+        <summary data-icon="label">編輯類別（新增／改名／顏色／順序／刪除）</summary>
         <div id="catEditor"></div>
       </details>
       <details class="colctl">
-        <summary>↔ 調整欄位寬度（目前分頁）</summary>
+        <summary data-icon="width">調整欄位寬度（目前分頁）</summary>
         <div class="cr"><span>類別</span><input type="range" min="50" max="200" step="2" data-col="--w-cat"><em></em></div>
         <div class="cr"><span>巡檢項目</span><input type="range" min="100" max="400" step="5" data-col="--w-name"><em></em></div>
         <div class="cr"><span>標準</span><input type="range" min="50" max="250" step="5" data-col="--w-std"><em></em></div>
@@ -200,16 +341,16 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
         <div class="cr"><span>確定列位置</span><select id="nbPosSel" style="flex:1;min-width:0"><option value="kb">貼齊數字鍵盤</option><option value="mid">固定在畫面中間偏上</option></select></div>
         <div class="small" style="margin:-2px 0 6px">確定列上的「↕」可以按住上下拖曳，自己調整位置；連點兩下還原。「自動捲動」開關在項目表格標題列右側。</div>
         <div class="small" style="margin:-2px 0 6px">「左右邊界」調小可讓表格更寬、一次顯示更多內容（整個 App，只影響這台裝置）；上面其他滑桿只影響目前分頁。</div>
-        <button class="secondary" type="button" id="colReset">還原預設寬度</button>
+        <button class="secondary" type="button" id="colReset" data-icon="restart_alt">還原預設寬度</button>
       </details>
       <div class="small" style="margin-top:6px">標準可填 &lt;10、&gt;300、6~12；只填「&gt;」＝實際值必須大於或等於上次抄表的數值；只填「=」＝自動帶入上次值，且必須與上次相同。順序：按住左邊的 ☰ 拖曳；先勾選多個項目，再拖曳其中任一個 ☰，就能一次移動全部。</div>
     </details>
     <div id="selBar" class="hidden">
       <strong id="selCount" style="font-size:14px"></strong>
-      <button id="selAllBtn" class="secondary" type="button">全選</button>
-      <button id="selTop" class="secondary" type="button">⤒ 移到最上</button>
-      <button id="selBottom" class="secondary" type="button">⤓ 移到最下</button>
-      <button id="selClear" class="secondary" type="button">取消選取</button>
+      <button id="selAllBtn" data-icon="select_all" class="secondary" type="button">全選</button>
+      <button id="selTop" data-icon="vertical_align_top" class="secondary" type="button">移到最上</button>
+      <button id="selBottom" data-icon="vertical_align_bottom" class="secondary" type="button">移到最下</button>
+      <button id="selClear" data-icon="deselect" class="secondary" type="button">取消選取</button>
     </div>
     <div class="tablewrap">
       <table>
@@ -223,91 +364,91 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
 
   <section class="card">
     <div class="row actions">
-      <button id="saveBtn" class="primary" type="button">💾 儲存夜班巡檢</button>
-      <button id="moreBtn" class="secondary" type="button">⋯ 更多功能 ▾</button>
+      <button id="saveBtn" data-icon="save" class="primary" type="button">儲存夜班巡檢</button>
+      <button id="moreBtn" data-icon="more_horiz" class="secondary" type="button">更多功能</button>
     </div>
     <div id="moreTools" class="row actions hidden" style="margin-top:8px">
-      <button id="helpBtn" class="secondary" type="button">📖 使用說明</button>
-      <button id="clearBtn" class="secondary" type="button">清除本次讀值</button>
-      <button id="checkBtn" class="secondary" type="button">🔍 檢查漏填</button>
-      <button id="sheetBtn" class="secondary" type="button">🖨 抄表排版</button>
-      <button id="exportBtn" class="secondary" type="button">📊 匯出 CSV</button>
-      <button id="historyBtn" class="secondary" type="button">🕘 歷史紀錄</button>
-      <button id="syncBtn" class="secondary" type="button">📦 備份／同步</button>
-      <button id="earBtn" class="secondary" type="button">🎧 耳機按鍵：關</button>
-      <button id="diagBtn" class="secondary" type="button">🔧 語音診斷</button>
+      <button id="helpBtn" data-icon="menu_book" class="secondary" type="button">使用說明</button>
+      <button id="clearBtn" data-icon="ink_eraser" class="secondary" type="button">清除本次讀值</button>
+      <button id="checkBtn" data-icon="fact_check" class="secondary" type="button">檢查漏填</button>
+      <button id="sheetBtn" data-icon="print" class="secondary" type="button">抄表排版</button>
+      <button id="exportBtn" data-icon="table_view" class="secondary" type="button">匯出 CSV</button>
+      <button id="historyBtn" data-icon="history" class="secondary" type="button">歷史紀錄</button>
+      <button id="syncBtn" data-icon="sync" class="secondary" type="button">備份／同步</button>
+      <button id="earBtn" data-icon="headphones" class="secondary" type="button">耳機按鍵：關</button>
+      <button id="diagBtn" data-icon="build" class="secondary" type="button">語音診斷</button>
     </div>
     <div id="message" class="status" style="margin-top:10px">準備完成。</div>
   </section>
 
   <section id="syncCard" class="card hidden">
-    <div class="row" style="justify-content:space-between"><strong>📦 備份／同步到其他裝置</strong><button id="syncClose" class="secondary" type="button">關閉</button></div>
-    <div class="notice" style="margin:8px 0"><strong>☁️ 雲端同步</strong>
+    <div class="row" style="justify-content:space-between"><strong><span class="ms" aria-hidden="true">sync</span>備份／同步到其他裝置</strong><button id="syncClose" data-icon="close" class="secondary" type="button">關閉</button></div>
+    <div class="notice" style="margin:8px 0"><strong><span class="ms" aria-hidden="true">cloud</span>雲端同步</strong>
       <div id="cloudStatus" class="small" style="margin-top:4px">檢查中…</div>
-      <div id="cloudTiming" class="small" style="margin-top:2px;color:#475569"></div>
-      <div id="cloudCfgInfo" class="small" style="margin-top:2px;color:#475569"></div>
-      <div id="appVer" class="small" style="margin-top:2px;color:#475569"></div>
-      <div class="row" style="margin-top:6px"><button id="cloudPull" class="secondary hidden" type="button">⬇ 重新載入雲端設定</button><button id="cloudPush" class="secondary hidden" type="button">⬆ 立即上傳設定</button></div>
+      <div id="cloudTiming" class="small" style="margin-top:2px;color:var(--muted)"></div>
+      <div id="cloudCfgInfo" class="small" style="margin-top:2px;color:var(--muted)"></div>
+      <div id="appVer" class="small" style="margin-top:2px;color:var(--muted)"></div>
+      <div class="row" style="margin-top:6px"><button id="cloudPull" data-icon="cloud_download" class="secondary hidden" type="button">重新載入雲端設定</button><button id="cloudPush" data-icon="cloud_upload" class="secondary hidden" type="button">立即上傳設定</button></div>
     </div>
     <div id="fbBox" class="notice hidden" style="margin:8px 0">
-      <strong>🔥 Firebase 設定／登入</strong>
+      <strong><span class="ms" aria-hidden="true">key</span>Firebase 設定／登入</strong>
       <div id="fbCfgArea" style="margin-top:6px">
         <div class="small">貼上 Firebase 網頁應用程式的設定（firebaseConfig），貼完按「儲存設定」。</div>
         <textarea id="fbCfgText" placeholder='const firebaseConfig = { apiKey: "...", authDomain: "...", projectId: "...", appId: "..." };' style="margin-top:4px"></textarea>
-        <button id="fbCfgSave" class="primary" type="button" style="margin-top:6px">儲存設定</button>
+        <button id="fbCfgSave" data-icon="save" class="primary" type="button" style="margin-top:6px">儲存設定</button>
       </div>
       <div id="fbCfgInfo" class="small hidden" style="margin-top:6px"></div>
       <div id="fbLogin" class="hidden" style="margin-top:6px"></div>
       <div id="fbUser" class="small hidden" style="margin-top:6px;word-break:break-all"></div>
-      <div class="row" style="margin-top:6px"><button id="fbSignOut" class="secondary hidden" type="button">登出</button><button id="fbCfgClear" class="secondary hidden" type="button">更換 Firebase 設定</button></div>
-      <div id="fbMsg" class="small" style="margin-top:4px;color:#b91c1c"></div>
+      <div class="row" style="margin-top:6px"><button id="fbSignOut" data-icon="logout" class="secondary hidden" type="button">登出</button><button id="fbCfgClear" data-icon="swap_horiz" class="secondary hidden" type="button">更換 Firebase 設定</button></div>
+      <div id="fbMsg" class="small" style="margin-top:4px;color:var(--bad)"></div>
     </div>
     <div class="notice" style="margin:8px 0">未連線雲端時，資料（項目、類別、順序、欄寬、紀錄）只存在「這台裝置的這個瀏覽器」，不會自動同步。電腦改好後，請在這裡匯出，再到手機匯入。</div>
     <label style="display:flex;align-items:center;gap:6px;margin:6px 0"><input id="syncHist" type="checkbox" style="width:auto;min-width:0"> 一併帶入歷史紀錄（上次值比較會用到）</label>
-    <div class="row"><button id="syncExport" class="primary" type="button">⬇ 匯出設定檔</button><button id="syncCopy" class="secondary" type="button">📋 複製設定文字</button></div>
+    <div class="row"><button id="syncExport" data-icon="file_download" class="primary" type="button">匯出設定檔</button><button id="syncCopy" data-icon="content_copy" class="secondary" type="button">複製設定文字</button></div>
     <div style="margin-top:12px"><label>匯入：選擇設定檔，或把設定文字貼在下面</label>
       <input id="syncFile" type="file" accept=".json,application/json,text/plain">
       <textarea id="syncText" placeholder="在此貼上設定文字" style="margin-top:6px"></textarea>
-      <button id="syncImport" class="danger" type="button" style="margin-top:8px">匯入並覆蓋這台裝置的設定</button>
+      <button id="syncImport" data-icon="upload_file" class="danger" type="button" style="margin-top:8px">匯入並覆蓋這台裝置的設定</button>
       <div class="small" style="margin-top:6px">若匯入的是「分頁項目檔」（例如 P1 項目），只會更新該分頁，其他分頁與設定不受影響。</div>
     </div>
   </section>
 
   <section id="diagBox" class="card hidden">
-    <div class="row" style="justify-content:space-between;margin-bottom:8px"><strong>🔧 語音診斷</strong><button id="diagClose" class="secondary" type="button">關閉</button></div>
-    <pre id="diagInfo" style="white-space:pre-wrap;font-size:12px;background:#f1f5f9;padding:8px;border-radius:8px;margin:0 0 8px"></pre><div class="small" style="margin-bottom:6px">辨識語言：<select id="diagLang" style="width:auto;min-width:0;display:inline-block"><option value="zh-TW">中文（台灣）</option><option value="zh-CN">中文（普通話）</option><option value="yue-Hant-HK">粵語（香港）</option><option value="en-US">English（美國）</option></select> <span class="small">換語言後再用「逐項報數」測試</span></div>
-<div id="diagMic" class="small" style="margin-bottom:6px"></div><div class="row"><button id="diagTest" class="primary" type="button">🎤 測試麥克風（3 秒）</button><button id="diagReset" class="secondary" type="button">♻️ 重設語音</button></div>
+    <div class="row" style="justify-content:space-between;margin-bottom:8px"><strong><span class="ms" aria-hidden="true">build</span>語音診斷</strong><button id="diagClose" data-icon="close" class="secondary" type="button">關閉</button></div>
+    <pre id="diagInfo" style="white-space:pre-wrap;font-size:12px;background:var(--surface-2);color:var(--text);padding:12px;border-radius:12px;margin:0 0 10px"></pre><div class="small" style="margin-bottom:6px">辨識語言：<select id="diagLang" style="width:auto;min-width:0;display:inline-block"><option value="zh-TW">中文（台灣）</option><option value="zh-CN">中文（普通話）</option><option value="yue-Hant-HK">粵語（香港）</option><option value="en-US">English（美國）</option></select> <span class="small">換語言後再用「逐項報數」測試</span></div>
+<div id="diagMic" class="small" style="margin-bottom:6px"></div><div class="row"><button id="diagTest" data-icon="mic" class="primary" type="button">測試麥克風（3 秒）</button><button id="diagReset" data-icon="restart_alt" class="secondary" type="button">重設語音</button></div>
   </section>
 
   <section id="helpCard" class="card hidden">
-    <div class="row" style="justify-content:space-between"><strong>📖 夜班小幫手 使用說明</strong><button id="helpClose" class="secondary" type="button">關閉</button></div>
+    <div class="row" style="justify-content:space-between"><strong><span class="ms" aria-hidden="true">menu_book</span>夜班小幫手 使用說明</strong><button id="helpClose" data-icon="close" class="secondary" type="button">關閉</button></div>
     <div class="small" id="helpVer" style="margin:4px 0 8px"></div>
     <div id="helpBody"></div>
-    <div class="row" style="margin-top:10px"><button id="helpDl" class="secondary" type="button">⬇ 下載使用說明（可列印）</button></div>
+    <div class="row" style="margin-top:10px"><button id="helpDl" data-icon="download" class="secondary" type="button">下載使用說明（可列印）</button></div>
   </section>
 
   <section id="checkCard" class="card hidden">
-    <div class="row" style="justify-content:space-between"><strong>🔍 檢查漏填</strong><button id="checkClose" class="secondary" type="button">關閉</button></div>
+    <div class="row" style="justify-content:space-between"><strong><span class="ms" aria-hidden="true">fact_check</span>檢查漏填</strong><button id="checkClose" data-icon="close" class="secondary" type="button">關閉</button></div>
     <div id="checkBody" style="margin-top:8px"></div>
-    <div class="row" style="margin-top:10px"><button id="checkGuide" class="primary" type="button">從漏填處開始報數</button><button id="checkRefresh" class="secondary" type="button">重新檢查</button></div>
+    <div class="row" style="margin-top:10px"><button id="checkGuide" data-icon="play_arrow" class="primary" type="button">從漏填處開始報數</button><button id="checkRefresh" data-icon="refresh" class="secondary" type="button">重新檢查</button></div>
   </section>
 
   <section id="sheetCard" class="card hidden">
     <div class="noprint">
-      <div class="row" style="justify-content:space-between"><strong>🖨 抄表排版（手抄用）</strong><button id="sheetClose" class="secondary" type="button">關閉</button></div>
+      <div class="row" style="justify-content:space-between"><strong><span class="ms" aria-hidden="true">print</span>抄表排版（手抄用）</strong><button id="sheetClose" data-icon="close" class="secondary" type="button">關閉</button></div>
       <div class="row" style="margin:8px 0">
         <label style="margin:0;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="sheetScope" value="cur" checked style="width:auto;min-width:0"> 目前分頁</label>
         <label style="margin:0;display:inline-flex;align-items:center;gap:4px"><input type="radio" name="sheetScope" value="all" style="width:auto;min-width:0"> 全部分頁</label>
         <label style="margin:0;display:inline-flex;align-items:center;gap:4px"><input id="sheetVals" type="checkbox" checked style="width:auto;min-width:0"> 帶入已輸入的實際值</label>
         <label style="margin:0;display:inline-flex;align-items:center;gap:4px"><input id="sheetDragOn" type="checkbox" style="width:auto;min-width:0"> 顯示拖曳／選取欄</label>
       </div>
-      <div class="row"><button id="sheetPrint" class="primary" type="button">🖨 列印</button><button id="sheetDl" class="secondary" type="button">⬇ 下載抄表單（HTML）</button></div>
+      <div class="row"><button id="sheetPrint" data-icon="print" class="primary" type="button">列印</button><button id="sheetDl" data-icon="download" class="secondary" type="button">下載抄表單（HTML）</button></div>
       <details class="colctl" id="sheetSettings">
-        <summary>⚙ 抄表單設定（顯示類別／欄位／欄寬／列高）</summary>
+        <summary data-icon="settings">抄表單設定（顯示類別／欄位／欄寬／列高）</summary>
         <div id="sheetChips"></div>
-        <div class="row" style="margin:6px 0"><button id="sheetOrderReset" class="secondary" type="button">還原抄表單順序（和主表格相同）</button></div>
+        <div class="row" style="margin:6px 0"><button id="sheetOrderReset" data-icon="restart_alt" class="secondary" type="button">還原抄表單順序（和主表格相同）</button></div>
         <details class="colctl">
-        <summary>↔ 調整欄寬／列高</summary>
+        <summary data-icon="width">調整欄寬／列高</summary>
         <div class="cr"><span>項次</span><input type="range" min="28" max="80" step="2" data-sw="no"><em></em></div>
         <div class="cr"><span>巡檢項目</span><input type="range" min="0" max="400" step="2" data-sw="name"><em></em></div>
         <div class="cr"><span>標準</span><input type="range" min="50" max="200" step="2" data-sw="std"><em></em></div>
@@ -316,25 +457,25 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
         <div class="cr"><span>備註</span><input type="range" min="40" max="300" step="2" data-sw="note"><em></em></div>
         <div class="cr"><span>列高</span><input type="range" min="20" max="80" step="2" data-sw="rh"><em></em></div>
         <div class="small">「巡檢項目」寬度設為 0（顯示「自動」）時，會自動占滿剩下的寬度；設成數字就是固定寬度。</div>
-        <button class="secondary" type="button" id="sheetReset" style="margin-top:6px">還原預設</button>
+        <button class="secondary" type="button" id="sheetReset" data-icon="restart_alt" style="margin-top:6px">還原預設</button>
       </details>
       <div class="small" style="margin:6px 0 10px">依類別分組，組內順序依表格順序，可按住每列右側 ☰ 拖曳調整（先勾選多列就能一起拖曳；抄表單的順序與主表格各自獨立，不會互相影響）。若列印沒反應，請用「下載」後在瀏覽器開啟再列印。</div>
       </details>
-      <div id="sheetSelInfo" class="small hidden" style="margin:6px 0"><strong id="sheetSelCount"></strong>　拖曳其中一個 ☰ 可一起移動（同類別內）　<button id="sheetSelClear" class="secondary" type="button" style="min-height:32px;padding:2px 10px">取消選取</button></div>
+      <div id="sheetSelInfo" class="small hidden" style="margin:6px 0"><strong id="sheetSelCount"></strong>　拖曳其中一個 ☰ 可一起移動（同類別內）　<button id="sheetSelClear" data-icon="deselect" class="secondary" type="button" style="min-height:32px;padding:2px 10px">取消選取</button></div>
     </div>
     <div id="sheetBody"></div>
   </section>
 
   <section id="historyCard" class="card hidden">
     <div class="row" style="justify-content:space-between">
-      <strong>夜班歷史紀錄</strong>
-      <button id="closeHistoryBtn" class="secondary" type="button">關閉</button>
+      <strong><span class="ms" aria-hidden="true">history</span>夜班歷史紀錄</strong>
+      <button id="closeHistoryBtn" data-icon="close" class="secondary" type="button">關閉</button>
     </div>
     <div id="historyList" style="margin-top:8px"></div>
   </section>
 </main>
 
-<div id="numBar" class="hidden"><button id="nbPrev" class="secondary" type="button">◀ 上一格</button><button id="nbDrag" type="button" title="按住上下拖曳可調整位置，連點兩下還原">↕</button><span id="nbInfo"></span><span id="rvBox" class="hidden"><button id="rvUp" class="secondary" type="button">▲ 上移</button><button id="rvDown" class="secondary" type="button">▼ 下移</button><button id="rvReset" class="secondary" type="button">還原<small id="rvVal">0</small></button></span><button id="nbFine" class="hidden" type="button" title="微調自動捲動的位置">🎯</button><button id="nbNext" class="primary" type="button">確定 ▶</button><div id="rvHint" class="hidden"></div></div>
+<div id="numBar" class="hidden"><button id="nbPrev" data-icon="arrow_back" class="secondary" type="button">上一格</button><button id="nbDrag" data-icon="drag_handle" type="button" title="按住上下拖曳可調整位置，連點兩下還原"></button><span id="nbInfo"></span><span id="rvBox" class="hidden"><button id="rvUp" data-icon="arrow_upward" class="secondary" type="button">上移</button><button id="rvDown" data-icon="arrow_downward" class="secondary" type="button">下移</button><button id="rvReset" data-icon="restart_alt" class="secondary" type="button">還原<small id="rvVal">0</small></button></span><button id="nbFine" data-icon="my_location" class="hidden" type="button" title="微調自動捲動的位置"></button><button id="nbNext" data-icon="check" class="primary" type="button">確定</button><div id="rvHint" class="hidden"></div></div>
 <script>
 const KEY_ITEMS='wasteInspectionItemsV1';
 const KEY_HISTORY='wasteInspectionHistoryV1';
@@ -594,7 +735,7 @@ function clearStaleValues(){   // 距離最後一次輸入超過 8 小時＝上�
   lsSet(KEY_VALBAK,bak);lsSet(KEY_VALTIME,vt);lsSet(KEY_TABS,{tabs:tabs,active:activeId,mig:3});
   render();
   const when=oldest<now?new Date(oldest).toLocaleString('zh-TW',{hour12:false,month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'先前';
-  $('message').innerHTML='已清除上一班的讀值 '+n+' 項（'+esc(when)+' 輸入，超過 8 小時）。<button id="valRestore" class="secondary" type="button" style="min-height:32px;padding:2px 10px;margin-left:6px">↩️ 復原</button>';
+  $('message').innerHTML='已清除上一班的讀值 '+n+' 項（'+esc(when)+' 輸入，超過 8 小時）。<button id="valRestore" data-icon="undo" class="secondary" type="button" style="min-height:32px;padding:2px 10px;margin-left:6px">復原</button>';
   $('valRestore').addEventListener('click',restoreStaleValues);
 }
 function restoreStaleValues(){
@@ -750,7 +891,7 @@ function render(){
       <td class="c-act"><input class="actual" inputmode="decimal" value="${esc(r[3])}" placeholder="${pv!==undefined?'上次 '+esc(pv):'讀值'}" enterkeyhint="next"></td>
       <td class="c-prev prevcell">${pv!==undefined?esc(pv):''}</td>
       <td class="c-res result ${j.c}">${j.t}</td>
-      <td class="c-ops ops"><button class="danger delete" type="button">刪除</button></td>
+      <td class="c-ops ops"><button class="danger delete" data-icon="delete" type="button">刪除</button></td>
       <td class="c-sel"><input type="checkbox" class="rowsel"${selected.has(r)?' checked':''}><span class="drag" title="按住拖曳">☰</span></td>`;
     tr.style.setProperty('--cc',CAT_COLOR[r[4]]||'#cbd5e1');
     const actual=tr.querySelector('.actual'),std=tr.querySelector('.standard'),nm=tr.querySelector('.name'),cat=tr.querySelector('.cat');
@@ -850,7 +991,7 @@ function showHistory(){
   $('historyCard').classList.remove('hidden');
   $('historyList').innerHTML=history.length?history.map((h,i)=>{
     const bad=h.items.filter(r=>judgement(r[3],r[2]).t==='異常').length;
-    return `<div class="history-item"><div class="row"><strong>${esc(h.date)} ${esc(h.tab||'P2')} 夜班</strong>${h.byName?'<span class="small"> · '+esc(h.byName)+'</span>':''}<span class="small">${bad?'⚠️ 異常 '+bad+' 項':'已儲存'}</span><span class="grow"></span><button class="secondary" type="button" data-load="${i}">載入</button></div></div>`;
+    return `<div class="history-item"><div class="row"><strong>${esc(h.date)} ${esc(h.tab||'P2')} 夜班</strong>${h.byName?'<span class="small"> · '+esc(h.byName)+'</span>':''}<span class="small">${bad?'⚠️ 異常 '+bad+' 項':'已儲存'}</span><span class="grow"></span><button class="secondary" type="button" data-load="${i}" data-icon="open_in_new">載入</button></div></div>`;
   }).join(''):'目前沒有歷史紀錄。';
   $('historyList').querySelectorAll('[data-load]').forEach(b=>b.addEventListener('click',()=>{
     const h=history[Number(b.dataset.load)];
@@ -890,7 +1031,7 @@ applyCols();
 let guided={on:false,i:0,t:null,rt:null,busy:false,noMic:false,paused:false,seq:0};
 const GSPEED=[{n:'快',wait:600},{n:'標準',wait:1500},{n:'慢',wait:2500},{n:'很慢',wait:4000}];   // 填入後等多久跳下一項（不影響複讀語速）
 let gSpeed=Math.min(GSPEED.length-1,Math.max(0,Number(lsGet('wasteInspectionGuideSpeed',1))||0));
-function applyGSpeed(){$('gSpeed').textContent='⏩ 速度：'+GSPEED[gSpeed].n;}
+function applyGSpeed(){$('gSpeed').textContent='速度：'+GSPEED[gSpeed].n;}
 function isValve(r){return r[0].includes('閥')||String(r[1]).includes('正常');}
 function startGuide(){
   collectRows();
@@ -915,7 +1056,7 @@ function showGuide(){
     $('gLast').textContent=`上一項「${p[0]}」＝ ${String(p[3]).trim()===''?'（未填）':p[3]}${pj.t==='異常'?' ⚠️ 異常':''}`;
   }else $('gLast').textContent='這是第一項';
   $('gVal').value=r[3]||'';
-  $('gHeard').textContent=guided.paused?'⏸ 已暫停（按「▶ 繼續」）':(recognition?'請說數字…':'此瀏覽器不支援語音，請直接輸入讀值後按「確定」。');
+  $('gHeard').textContent=guided.paused?'已暫停（按「繼續」）':(recognition?'請說數字…':'此瀏覽器不支援語音，請直接輸入讀值後按「確定」。');
   applyMicBtn();listenGuide();
 }
 function listenGuide(){
@@ -933,7 +1074,7 @@ function guidedEnd(){
   clearTimeout(guided.rt);
   guided.rt=setTimeout(()=>{
     if(guided.on&&!guided.busy&&!guided.noMic&&!guided.paused){
-      try{recognition.start();}catch(e){ if(e&&e.name!=='InvalidStateError')$('gHeard').textContent='請按「🎙️ 說數字」繼續'; }
+      try{recognition.start();}catch(e){ if(e&&e.name!=='InvalidStateError')$('gHeard').textContent='請按「說數字」繼續'; }
     }
   },300);
 }
@@ -1044,13 +1185,13 @@ $('gOk').addEventListener('click',()=>{const v=$('gVal').value.trim();if(v)commi
 $('gVal').addEventListener('keydown',e=>{if(e.key==='Enter'){const v=$('gVal').value.trim();if(v)commitGuide(v);}});
 function applyMicBtn(){   // 說數字鍵：聆聽中＝⏸ 暫停；暫停或麥克風出錯＝繼續
   const b=$('gMic');if(!b)return;
-  b.textContent=guided.paused?'▶ 繼續':(guided.noMic?'🎙️ 說數字':'⏸ 暫停');
+  b.textContent=guided.paused?'繼續':(guided.noMic?'說數字':'暫停');b.dataset.icon=guided.paused?'play_arrow':(guided.noMic?'mic':'pause');
   b.classList.toggle('voice',!guided.paused);b.classList.toggle('primary',guided.paused);
 }
 function pauseGuide(){
   guided.paused=true;clearTimeout(guided.rt);
   try{recognition&&recognition.stop();}catch(e){}
-  $('gHeard').textContent='⏸ 已暫停（按「▶ 繼續」）';applyMicBtn();keepEar();
+  $('gHeard').textContent='已暫停（按「繼續」）';applyMicBtn();keepEar();
 }
 function resumeGuide(){
   guided.paused=false;guided.noMic=false;guided.resumeAt=Date.now();guided.retried=false;
@@ -1282,8 +1423,8 @@ function afterCatChange(){
 function renderCatEditor(){
   const box=$('catEditor');
   const cnt={};items.forEach(r=>{cnt[r[4]]=(cnt[r[4]]||0)+1;});
-  box.innerHTML='<div class="small" style="margin:4px 0">目前編輯：<b>'+esc(curTab().name)+'</b> 分頁的類別（各分頁互相獨立）</div>'+CATS.map((n,i)=>`<div class="catrow"><input type="color" class="cc" data-ci="${i}" value="${CAT_COLOR[n]}" style="width:44px;height:38px;padding:0;border:0;min-width:0"><input class="cn" data-ci="${i}" value="${esc(n)}" maxlength="10"><span class="small" style="width:60px;text-align:right">(${cnt[n]||0}項)</span><button type="button" class="secondary cu" data-ci="${i}"${i===0?' disabled':''}>▲</button><button type="button" class="secondary cd" data-ci="${i}"${i===CATS.length-1?' disabled':''}>▼</button><button type="button" class="danger cx" data-ci="${i}">刪除</button></div>`).join('')
-   +`<div class="catrow"><input id="catNew" class="cn" placeholder="新類別名稱" maxlength="10"><button id="catAdd" type="button" class="primary">＋ 新增類別</button></div><div class="small">類別設定只屬於目前分頁，不會影響其他分頁；改名會同步更新本分頁的項目；刪除類別後，本分頁該類別的項目會變成「未分類」。</div>`;
+  box.innerHTML='<div class="small" style="margin:4px 0">目前編輯：<b>'+esc(curTab().name)+'</b> 分頁的類別（各分頁互相獨立）</div>'+CATS.map((n,i)=>`<div class="catrow"><input type="color" class="cc" data-ci="${i}" value="${CAT_COLOR[n]}" style="width:44px;height:38px;padding:0;border:0;min-width:0"><input class="cn" data-ci="${i}" value="${esc(n)}" maxlength="10"><span class="small" style="width:60px;text-align:right">(${cnt[n]||0}項)</span><button type="button" class="secondary cu" data-icon="arrow_upward" aria-label="上移" data-ci="${i}"${i===0?' disabled':''}></button><button type="button" class="secondary cd" data-icon="arrow_downward" aria-label="下移" data-ci="${i}"${i===CATS.length-1?' disabled':''}></button><button type="button" class="danger cx" data-icon="delete" data-ci="${i}">刪除</button></div>`).join('')
+   +`<div class="catrow"><input id="catNew" class="cn" placeholder="新類別名稱" maxlength="10"><button id="catAdd" data-icon="add" type="button" class="primary">新增類別</button></div><div class="small">類別設定只屬於目前分頁，不會影響其他分頁；改名會同步更新本分頁的項目；刪除類別後，本分頁該類別的項目會變成「未分類」。</div>`;
   box.querySelectorAll('.cn[data-ci]').forEach(inp=>inp.addEventListener('change',()=>{
     const i=Number(inp.dataset.ci),old=CATS[i],nn=inp.value.trim();
     if(!nn||nn==='未分類'||(CATS.includes(nn)&&nn!==old)){$('message').textContent='類別名稱不可空白、不可重複，也不能叫「未分類」。';renderCatEditor();return;}
@@ -1375,11 +1516,11 @@ $('syncImport').addEventListener('click',e=>twoStep(e.currentTarget,'再按一�
   if(!err)$('syncText').value='';
 }));
 function applyPin(){$('voiceCard').classList.toggle('pinned',guided.on);}   // 語音區只在逐項報數時固定在畫面上方
-$('gMin').addEventListener('click',()=>{const m=$('guide').classList.toggle('gmin');$('gMin').textContent=m?'▼ 展開':'▲ 收合';});
+$('gMin').addEventListener('click',()=>{const m=$('guide').classList.toggle('gmin');$('gMin').textContent=m?'展開':'收合';$('gMin').dataset.icon=m?'expand_more':'expand_less';});
 function setHH(){document.documentElement.style.setProperty('--hh',document.querySelector('header').offsetHeight+'px');}
 window.addEventListener('resize',setHH);window.addEventListener('orientationchange',setHH);setHH();applyPin();
-function closeMore(){$('moreTools').classList.add('hidden');$('moreBtn').textContent='⋯ 更多功能 ▾';}
-$('moreBtn').addEventListener('click',()=>{const h=$('moreTools').classList.toggle('hidden');$('moreBtn').textContent=h?'⋯ 更多功能 ▾':'⋯ 收起 ▴';});
+function closeMore(){$('moreTools').classList.add('hidden');$('moreBtn').textContent='更多功能';$('moreBtn').dataset.icon='more_horiz';}
+$('moreBtn').addEventListener('click',()=>{const h=$('moreTools').classList.toggle('hidden');$('moreBtn').textContent=h?'更多功能':'收起';$('moreBtn').dataset.icon=h?'more_horiz':'expand_less';});
 $('moreTools').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setTimeout(closeMore,0)));
 let ear={on:false,audio:null};
 let actx=null;
@@ -1413,7 +1554,7 @@ function earAction(a){
       guided.paused=!guided.paused;
       if(guided.paused){
         try{recognition&&recognition.stop();}catch(e){}
-        $('gHeard').textContent='⏸ 已暫停（再按一次耳機鍵繼續）';beep(440,160);applyMicBtn();
+        $('gHeard').textContent='已暫停（再按一次耳機鍵繼續）';beep(440,160);applyMicBtn();
       }else{
         guided.noMic=false;$('gHeard').textContent='請說數字…';applyMicBtn();
         earYield(true);   // 先停掉無聲音訊：iPhone 同時播放和收音時，語音辨識會出錯
@@ -1436,7 +1577,7 @@ function earOff(){
   try{if(ear.audio)ear.audio.pause();}catch(e){}
   ['play','pause','nexttrack','previoustrack','seekforward','seekbackward'].forEach(a=>{try{navigator.mediaSession.setActionHandler(a,null);}catch(e){}});
   try{navigator.mediaSession.playbackState='none';}catch(e){}
-  $('earBtn').textContent='🎧 耳機按鍵：關';
+  $('earBtn').textContent='耳機按鍵：關';$('earBtn').classList.remove('on');
 }
 function earOn(){
   if(!('mediaSession' in navigator)){$('message').textContent='此瀏覽器不支援耳機按鍵控制。';return;}
@@ -1449,7 +1590,7 @@ function earOn(){
     const map={play:'toggle',pause:'toggle',nexttrack:'next',previoustrack:'prev',seekforward:'next',seekbackward:'prev'};
     Object.keys(map).forEach(a=>{try{navigator.mediaSession.setActionHandler(a,()=>earAction(map[a]));}catch(e){}});
     keepEar();
-    $('earBtn').textContent='🎧 耳機按鍵：開';
+    $('earBtn').textContent='耳機按鍵：開';$('earBtn').classList.add('on');
     $('message').textContent='耳機按鍵已啟用：按一下＝開始逐項報數／暫停或繼續聆聽；按兩下＝跳過；按三下＝更正。請保持畫面開啟。';
   };
   if(p&&p.then)p.then(ready).catch(()=>{$('message').textContent='無法啟動耳機控制（瀏覽器擋下了背景音訊）。請再按一次，或改用獨立網站版。';});else ready();
@@ -1458,10 +1599,10 @@ $('earBtn').addEventListener('click',()=>{if(ear.on)earOff();else earOn();});
 let rb={on:lsGet('wasteInspectionReadback',false)===true};
 const RBRATE=[{n:'慢',r:0.7},{n:'稍慢',r:0.85},{n:'正常',r:1},{n:'稍快',r:1.2},{n:'快',r:1.4}];   // 複讀語速（和報數速度分開）
 let rbRate=Math.min(RBRATE.length-1,Math.max(0,Number(lsGet('wasteInspectionReadbackRate',2))));if(!Number.isFinite(rbRate))rbRate=2;
-function applyRbRate(){['rbRateBtn','gRbRate'].forEach(id=>{const b=$(id);if(b)b.textContent='🗣 語速：'+RBRATE[rbRate].n;});}
+function applyRbRate(){['rbRateBtn','gRbRate'].forEach(id=>{const b=$(id);if(b)b.textContent='語速：'+RBRATE[rbRate].n;});}
 function cycleRbRate(){rbRate=(rbRate+1)%RBRATE.length;lsSet('wasteInspectionReadbackRate',rbRate);applyRbRate();speak('語速'+RBRATE[rbRate].n+'，一二三點五');}
 function applyRb(){
-  ['rbBtn','gRb'].forEach(id=>{const b=$(id);if(!b)return;b.textContent=rb.on?'🔊 複讀：開':'🔊 複讀：關';b.classList.toggle('primary',rb.on);b.classList.toggle('secondary',!rb.on);});
+  ['rbBtn','gRb'].forEach(id=>{const b=$(id);if(!b)return;b.textContent=rb.on?'複讀：開':'複讀：關';b.dataset.icon=rb.on?'volume_up':'volume_off';b.classList.toggle('primary',rb.on);b.classList.toggle('secondary',!rb.on);});
 }
 function speak(text,done){
   if(!window.speechSynthesis||typeof SpeechSynthesisUtterance==='undefined'){if(done)done();return;}
@@ -1868,7 +2009,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v56（2026-10-29）';
+const APP_VER='v57（2026-10-29）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -1970,7 +2111,7 @@ function fbLoadSdk(){
   const load=f=>new Promise((res,rej)=>{const sc=document.createElement('script');sc.src=base+f;sc.onload=res;sc.onerror=()=>rej(new Error('無法載入 '+f));document.head.appendChild(sc);});
   return load('firebase-app-compat.js').then(()=>Promise.all([load('firebase-auth-compat.js'),load('firebase-firestore-compat.js')]));
 }
-const LOGIN_HTML='<form id="fbForm" autocomplete="on" onsubmit="return false"><input id="fbEmail" type="email" placeholder="Email（管理者替你建立的帳號）" autocomplete="username"><input id="fbPass" type="password" placeholder="密碼" autocomplete="current-password" style="margin-top:4px"><input id="fbName" type="text" placeholder="顯示名稱（你儲存的紀錄會標示）" maxlength="20" autocomplete="off" style="margin-top:4px"><button id="fbSignIn" class="primary" type="button" style="margin-top:6px">登入</button></form>';
+const LOGIN_HTML='<form id="fbForm" autocomplete="on" onsubmit="return false"><input id="fbEmail" type="email" placeholder="Email（管理者替你建立的帳號）" autocomplete="username"><input id="fbPass" type="password" placeholder="密碼" autocomplete="current-password" style="margin-top:4px"><input id="fbName" type="text" placeholder="顯示名稱（你儲存的紀錄會標示）" maxlength="20" autocomplete="off" style="margin-top:4px"><button id="fbSignIn" data-icon="login" class="primary" type="button" style="margin-top:6px">登入</button></form>';
 function noAutofill(root){
   (root||document).querySelectorAll('input,textarea').forEach(el=>{
     const t=(el.getAttribute('type')||'text').toLowerCase();
@@ -2079,7 +2220,7 @@ if($('appVer'))$('appVer').textContent='App 版本：'+APP_VER;
   hdl.addEventListener('pointerup',end);hdl.addEventListener('pointercancel',end);
 })();
 function applyAutoBtn(){
-  const b=$('autoScrollBtn');b.textContent='↕ 自動捲動：'+(autoScroll?'開':'關');
+  const b=$('autoScrollBtn');b.textContent='自動捲動：'+(autoScroll?'開':'關');
   b.classList.toggle('primary',autoScroll);b.classList.toggle('secondary',!autoScroll);
   document.body.classList.toggle('asOn',autoScroll);
   $('nbFine').classList.toggle('hidden',!autoScroll);if(!autoScroll)rvOpen(false);
@@ -2232,7 +2373,7 @@ function renderTabs(){
     const b=document.createElement('button');b.type='button';b.className='tab'+(t.id===activeId?' active':'');b.textContent=t.name;
     b.addEventListener('click',()=>switchTab(t.id));bar.appendChild(b);
   });
-  const a=document.createElement('button');a.type='button';a.className='tab add';a.textContent='＋ 新增分頁';
+  const a=document.createElement('button');a.type='button';a.className='tab add';a.textContent='新增分頁';a.dataset.icon='add';
   a.addEventListener('click',()=>openTabForm('add'));bar.appendChild(a);
 }
 function switchTab(id){
