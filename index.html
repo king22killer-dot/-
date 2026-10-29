@@ -250,6 +250,7 @@ html[data-theme="light"] #numBar{background:rgba(255,255,255,.95);box-shadow:0 -
 html[data-theme="light"] #rvHint{background:rgba(255,255,255,.97)}
 html[data-theme="light"] tr.miss td{background:rgba(251,191,36,.16)}
 html[data-theme="light"] #sheetBody{border:1px solid var(--border-2)}
+.chip[data-icon]::before{font-size:1.15em;margin-right:.3em;color:var(--accent-2)}.chip.off[data-icon]::before{color:var(--faint)}
 </style>
 <script>(function(){   // 圖示字型「真的下載完成」才顯示圖示；沒網路時只顯示文字，不會出現 save、mic 這類英文字
   var h=document.documentElement,chk=function(){try{var ok=false;document.fonts.forEach(function(f){if(f.family.replace(/["']/g,'')==='Material Symbols Outlined'&&f.status==='loaded')ok=true;});if(ok)h.classList.add('ic');}catch(e){}};
@@ -604,8 +605,8 @@ function loadTabView(){
 }
 ensureTabView(lsGet('wasteInspectionColW',null),lsGet(KEY_HCOL,[]));
 function colChipHTML(defs,hidden){
-  return defs.map(d=>`<button type="button" class="chip${hidden.has(d[0])?' off':''}" style="--cc:#334155" data-ck="${d[0]}"><i></i>${hidden.has(d[0])?'🙈':'👁'} ${d[1]}</button>`).join('')
-   +(hidden.size?'<button type="button" class="chip" data-ckall="1" style="--cc:#0f172a">全部顯示</button>':'');
+  return defs.map(d=>`<button type="button" class="chip${hidden.has(d[0])?' off':''}" style="--cc:#334155" data-ck="${d[0]}" data-icon="${hidden.has(d[0])?'visibility_off':'visibility'}"><i></i>${d[1]}</button>`).join('')
+   +(hidden.size?'<button type="button" class="chip" data-ckall="1" data-icon="done_all" style="--cc:#0f172a">全部顯示</button>':'');
 }
 function toggleCol(set,defs,k){
   if(set.has(k))set.delete(k);
@@ -626,8 +627,8 @@ function renderColChips(){
   const al=box.querySelector('[data-ckall]');if(al)al.addEventListener('click',()=>{hiddenCols.clear();saveHiddenCols();applyColVis();renderColChips();});
 }
 function chipHTML(names,cnt,hidden,colorFn){
-  return names.map(n=>`<button type="button" class="chip${hidden.has(n)?' off':''}" style="--cc:${(colorFn?colorFn(n):CAT_COLOR[n])||'#64748b'}" data-cn="${esc(n)}"><i></i>${hidden.has(n)?'🙈':'👁'} ${esc(n)} (${cnt[n]||0})</button>`).join('')
-   +(hidden.size?'<button type="button" class="chip" data-all="1" style="--cc:#0f172a">全部顯示</button>':'');
+  return names.map(n=>`<button type="button" class="chip${hidden.has(n)?' off':''}" style="--cc:${(colorFn?colorFn(n):CAT_COLOR[n])||'#64748b'}" data-cn="${esc(n)}" data-icon="${hidden.has(n)?'visibility_off':'visibility'}"><i></i>${esc(n)} (${cnt[n]||0})</button>`).join('')
+   +(hidden.size?'<button type="button" class="chip" data-all="1" data-icon="done_all" style="--cc:#0f172a">全部顯示</button>':'');
 }
 function renderChips(){
   const box=$('catChips');if(!box)return;
@@ -2032,7 +2033,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v60（2026-10-29）';
+const APP_VER='v61（2026-10-29）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
