@@ -44,7 +44,7 @@ table{min-width:0!important;width:auto!important}
 .gbtns{display:flex;gap:6px;margin-top:6px}.gbtns button{flex:1;min-width:0;padding:8px 4px;min-height:42px}.gbtns .voice{min-width:0}
 #voiceCard.pinned{position:sticky;top:calc(var(--hh,70px) + 6px);z-index:9;max-height:calc(100vh - var(--hh,70px) - 16px);max-height:calc(100dvh - var(--hh,70px) - 16px);overflow:auto;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 #voiceCard .vbtns{margin-top:6px!important;gap:6px}#voiceCard .vbtns button{flex:1;min-width:0;padding:8px 4px;min-height:40px;font-size:14px}#voiceCard .vbtns .status{flex:0 0 100%;padding:5px 9px}
-#voiceCard.guiding .vhead,#voiceCard.guiding .vbtns,#voiceCard.guiding .vnote{display:none}
+#voiceCard.guiding .vhead,#voiceCard.guiding .vbtns{display:none}
 .sheet td.mvc{padding:2px;white-space:nowrap;text-align:center}
 .sheet td.mvc{position:sticky;right:0;background:#fff;z-index:2;box-shadow:-6px 0 6px -6px rgba(0,0,0,.3)}.sheet th.noprint{position:sticky;right:0;z-index:3;background:#f1f5f9;box-shadow:-6px 0 6px -6px rgba(0,0,0,.3)}.sheet td.mvc button{min-height:26px;min-width:34px;padding:0;margin:0 1px;font-size:12px;border-radius:7px}
 td.catcell{border-left:6px solid var(--cc,#cbd5e1);padding-left:6px}select.cat{width:var(--w-cat);min-width:var(--w-cat)}
@@ -171,11 +171,6 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
       <button id="guideBtn" class="primary" type="button">📋 逐項報數</button>
       <span id="voiceStatus" class="status grow">按「逐項報數」開始</span>
     </div>
-    <details class="colctl vnote"><summary>ℹ️ 使用說明（完整版在「⋯ 更多功能 → 📖 使用說明」）</summary><div class="notice" style="margin-top:10px">
-      按「📋 逐項報數」：App 會依序顯示每個項目，你只要說數字，說「下一項」「更正」（或「上一項」）「結束」可控制。
-      第一次使用麥克風時，iPhone 會要求授權。
-    </div><button id="diagBtn" class="secondary" type="button" style="margin-top:8px">🔧 語音診斷</button><div id="diagBox" class="hidden" style="margin-top:8px"><pre id="diagInfo" style="white-space:pre-wrap;font-size:12px;background:#f1f5f9;padding:8px;border-radius:8px;margin:0 0 8px"></pre><div class="small" style="margin-bottom:6px">辨識語言：<select id="diagLang" style="width:auto;min-width:0;display:inline-block"><option value="zh-TW">中文（台灣）</option><option value="zh-CN">中文（普通話）</option><option value="yue-Hant-HK">粵語（香港）</option><option value="en-US">English（美國）</option></select> <span class="small">換語言後再用「逐項報數」測試</span></div>
-<div id="diagMic" class="small" style="margin-bottom:6px"></div><div class="row"><button id="diagTest" class="primary" type="button">🎤 測試麥克風（3 秒）</button><button id="diagReset" class="secondary" type="button">♻️ 重設語音</button></div></div></details>
   </section>
 
   <section class="card">
@@ -240,6 +235,7 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
       <button id="historyBtn" class="secondary" type="button">🕘 歷史紀錄</button>
       <button id="syncBtn" class="secondary" type="button">📦 備份／同步</button>
       <button id="earBtn" class="secondary" type="button">🎧 耳機按鍵：關</button>
+      <button id="diagBtn" class="secondary" type="button">🔧 語音診斷</button>
     </div>
     <div id="message" class="status" style="margin-top:10px">準備完成。</div>
   </section>
@@ -275,6 +271,12 @@ body.nbOpen.asOn #voiceCard.pinned:not(.guiding){position:relative;top:auto;box-
       <button id="syncImport" class="danger" type="button" style="margin-top:8px">匯入並覆蓋這台裝置的設定</button>
       <div class="small" style="margin-top:6px">若匯入的是「分頁項目檔」（例如 P1 項目），只會更新該分頁，其他分頁與設定不受影響。</div>
     </div>
+  </section>
+
+  <section id="diagBox" class="card hidden">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px"><strong>🔧 語音診斷</strong><button id="diagClose" class="secondary" type="button">關閉</button></div>
+    <pre id="diagInfo" style="white-space:pre-wrap;font-size:12px;background:#f1f5f9;padding:8px;border-radius:8px;margin:0 0 8px"></pre><div class="small" style="margin-bottom:6px">辨識語言：<select id="diagLang" style="width:auto;min-width:0;display:inline-block"><option value="zh-TW">中文（台灣）</option><option value="zh-CN">中文（普通話）</option><option value="yue-Hant-HK">粵語（香港）</option><option value="en-US">English（美國）</option></select> <span class="small">換語言後再用「逐項報數」測試</span></div>
+<div id="diagMic" class="small" style="margin-bottom:6px"></div><div class="row"><button id="diagTest" class="primary" type="button">🎤 測試麥克風（3 秒）</button><button id="diagReset" class="secondary" type="button">♻️ 重設語音</button></div>
   </section>
 
   <section id="helpCard" class="card hidden">
@@ -942,7 +944,7 @@ function guidedError(e){
     return;
   }
   if(e.error==='not-allowed'||e.error==='service-not-allowed'){guided.noMic=true;$('gHeard').textContent='🎙️ '+errText(e.error)+' 可直接輸入讀值後按「確定」。';}
-  else if(e.error==='no-speech'){guided.ns=(guided.ns||0)+1;if(guided.ns>=3)$('gHeard').textContent='⚠️ 連續聽不到聲音：請檢查麥克風／耳機收音；可先關閉「🎧 耳機按鍵」「🔊 複讀」；結束報數後到「ℹ️ 使用說明」→「🔧 語音診斷」測試。';}
+  else if(e.error==='no-speech'){guided.ns=(guided.ns||0)+1;if(guided.ns>=3)$('gHeard').textContent='⚠️ 連續聽不到聲音：請檢查麥克風／耳機收音；可先關閉「🎧 耳機按鍵」「🔊 複讀」；結束報數後到「⋯ 更多功能 → 🔧 語音診斷」測試。';}
   else if(e.error!=='aborted'){$('gHeard').textContent='辨識錯誤：'+errText(e.error)+'（可手動輸入）';}
 }
 // 逐項報數只需要數字：噪音大時 iPhone 常把數字聽成同音字，先換回數字（整詞優先，例如「士林」＝四零）
@@ -1673,7 +1675,8 @@ function voiceReset(){
 }
 $('diagLang').value=lsGet('wasteInspectionSpeechLang','zh-TW');
 $('diagLang').addEventListener('change',()=>{const v=$('diagLang').value;lsSet('wasteInspectionSpeechLang',v);try{if(recognition)recognition.lang=v;}catch(e){}vlog('辨識語言改為 '+v);renderDiag();});
-$('diagBtn').addEventListener('click',()=>{const h=$('diagBox').classList.toggle('hidden');if(!h)renderDiag();});
+$('diagBtn').addEventListener('click',()=>{$('diagBox').classList.remove('hidden');renderDiag();$('diagBox').scrollIntoView({block:'start',behavior:'smooth'});});
+$('diagClose').addEventListener('click',()=>$('diagBox').classList.add('hidden'));
 $('diagTest').addEventListener('click',async()=>{await micTest();renderDiag();});
 $('diagReset').addEventListener('click',()=>{voiceReset();renderDiag();});
 let cloud={db:null,user:null,uid:null,canCfg:false,canRec:true,lastSig:'',timer:null,applying:false,pendingRender:false,firstSnap:true,unsub:null,msg:''};
@@ -1809,7 +1812,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v52（2026-10-29）';
+const APP_VER='v53（2026-10-29）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -2111,7 +2114,7 @@ const HELP=[
 <li><b>🔊 複讀</b>：辨識完會逐字唸出數值，唸完才跳下一項（語音區的開關）。</li>
 <li><b>🗣 語速</b>（語音區和報數框都有）：複讀唸數字的快慢，分「慢／稍慢／正常／稍快／快」，按一下換一段，會唸一次讓你聽，並記住設定。</li>
 <li>語音區只有在逐項報數時才會固定在畫面上方，結束後恢復正常捲動。</li>
-<li><b>🔧 語音診斷</b>（語音區的「ℹ️ 使用說明」裡）：測試麥克風、重設語音、更換辨識語言。</li>
+<li><b>🔧 語音診斷</b>（⋯ 更多功能）：測試麥克風、重設語音、更換辨識語言。</li>
 </ul>
 <div class="note">iPhone 請用 Safari 開啟，並確認「設定→一般→鍵盤→啟用聽寫」和 Siri 已開啟。從主畫面圖示、LINE 內建瀏覽器或 claude.ai 連結內開啟時，語音常不能用，可改用鍵盤上的麥克風。</div>`],
 ['5　分頁與項目管理',`<ul>
