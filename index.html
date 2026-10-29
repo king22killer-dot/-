@@ -761,6 +761,7 @@ function render(){
     };
     actual.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key==='Go'||e.key==='Next'){e.preventDefault();stepActual(actual,1);}});
     actual.addEventListener('input',recalc);std.addEventListener('input',recalc);
+    [std,nm].forEach(el=>el.addEventListener('change',()=>{collectRows();saveItems();}));   // 改完標準／名稱立刻存（不等換頁），雲端同步才不會蓋掉
     std.addEventListener('input',()=>{if(std.value.trim()==='='&&actual.value.trim()===''){const pp=prevMap[nm.value];if(pp!==undefined){actual.value=pp;recalc();}}});
     cat.addEventListener('change',()=>{
       tr.style.setProperty('--cc',CAT_COLOR[cat.value]||'#cbd5e1');collectRows();saveItems();refreshSheetIfOpen();
@@ -1691,6 +1692,7 @@ async function cloudPushConfig(force){
   if(!cloud.db||!cloud.canCfg||cloud.applying)return;
   const sig=cfgSig();if(!force&&sig===cloud.lastSig)return;
   const rev=Date.now();
+  (cloud.myRevs=cloud.myRevs||new Set()).add(rev);   // 記住自己上傳的版本：傳回來時不用再套用
   try{
     const tp=performance.now();
     await cloud.db.doc('config/main').set({rev:rev,by:cloud.uid||'',json:sig});
@@ -1702,9 +1704,42 @@ async function cloudPushConfig(force){
     else cloudStatus('☁️ 設定上傳失敗：'+((e&&e.code)||e));
   }
 }
+// 三方合併：base＝上次同步的設定，local＝這台目前的設定，remote＝雲端傳來的設定。這台改過的欄位用這台的，其他用雲端的
+function mergeCfg(baseJ,localJ,remoteJ){
+  let B,L,R;try{B=JSON.parse(baseJ);L=JSON.parse(localJ);R=JSON.parse(remoteJ);}catch(e){return remoteJ;}
+  const S=x=>JSON.stringify(x===undefined?null:x);
+  const pick=(b,l,r)=>S(l)!==S(b)?l:r;
+  const rows=(b,l,r)=>{
+    b=b||[];l=l||[];r=r||[];
+    if(S(l)===S(b))return r;if(S(r)===S(b))return l;
+    if(b.length!==l.length||b.length!==r.length)return l;   // 兩邊都增刪了項目：以這台為準
+    return r.map((row,i)=>row.map((v,k)=>pick(b[i][k],l[i][k],v)));
+  };
+  const tab=(b,l,r)=>{
+    if(!b)return r;if(S(l)===S(b))return r;if(S(r)===S(b))return l;
+    const o=Object.assign({},r);
+    new Set([...Object.keys(l),...Object.keys(r)]).forEach(k=>{o[k]=k==='items'?rows(b.items,l.items,r.items):pick(b[k],l[k],r[k]);});
+    return o;
+  };
+  const find=(c,id)=>(c.tabs||[]).find(t=>t.id===id);
+  const out=Object.assign({},R,{tabs:[]});
+  (R.tabs||[]).forEach(r=>{
+    const b=find(B,r.id),l=find(L,r.id);
+    if(!l){if(b&&S(b)===S(r))return;out.tabs.push(r);return;}   // 這台刪掉的分頁
+    out.tabs.push(tab(b,l,r));
+  });
+  (L.tabs||[]).forEach(l=>{if(find(R,l.id))return;const b=find(B,l.id);if(!b||S(b)!==S(l))out.tabs.push(l);});   // 這台新增的分頁
+  ['sheetCfg','sheetHiddenCols'].forEach(k=>{out[k]=pick(B[k],L[k],R[k]);});
+  return JSON.stringify(out);
+}
 function applyCloudConfig(json,rev){
   let c;try{c=JSON.parse(json);}catch(e){return false;}
   if(!c||!Array.isArray(c.tabs)||!c.tabs.length)return false;
+  let remoteJ=json,merged=false;
+  if(cloud.canCfg&&cloud.lastSig){   // 這台有還沒上傳的修改：和雲端的版本合併，不要直接蓋掉
+    collectRows();const local=cfgSig();
+    if(local!==cloud.lastSig&&local!==json){const m=mergeCfg(cloud.lastSig,local,json);if(m!==json){try{c=JSON.parse(m);merged=true;}catch(e){}}}
+  }
   cloud.applying=true;
   try{
     collectRows();
@@ -1721,7 +1756,7 @@ function applyCloudConfig(json,rev){
     catsFor='';viewFor='';
     lsSet(KEY_TABS,{tabs:tabs,active:activeId,mig:3});
     render();renderTabs();renderCatEditor();applySheetCtl();refreshSheetIfOpen();
-    cloud.lastSig=cfgSig();lsSet('wasteInspectionCfgRev',rev);
+    cloud.lastSig=merged?remoteJ:cfgSig();lsSet('wasteInspectionCfgRev',rev);   // 合併過的話，下一次定時上傳會把合併結果傳上去
   }finally{cloud.applying=false;}
   return true;
 }
@@ -1812,7 +1847,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v53（2026-10-29）';
+const APP_VER='v54（2026-10-29）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -1821,6 +1856,7 @@ function showCfgInfo(d){
 function showTiming(){const el=$('cloudTiming');if(el)el.textContent=timingText();}
 function editingTable(){const a=document.activeElement;return !!(a&&a.closest&&a.closest('#tbody')&&/INPUT|SELECT/.test(a.tagName));}
 function tryApplyCfg(d){
+  if(cloud.myRevs&&cloud.myRevs.has(Number(d.rev))){lsSet('wasteInspectionCfgRev',Number(d.rev));return;}   // 自己剛上傳的
   if(editingTable()){cloud.pendingCfg=d;return;}
   cloud.pendingCfg=null;
   if(applyCloudConfig(d.json,Number(d.rev)||Date.now()))cloudStatus('☁️ 已連線｜已同步最新設定（'+nowText()+'）｜'+cloudRoleText());
