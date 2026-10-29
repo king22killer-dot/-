@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#18181B">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(JSON.parse(localStorage.getItem('wasteInspectionTheme')||'"dark"')==='light'){document.documentElement.setAttribute('data-theme','light');var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#F4F4F5';}}catch(e){}})();</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="夜班小幫手">
@@ -228,6 +229,27 @@ th,td{padding:8px 5px}td input,td select{padding:9px 8px}
   .card:has(.tablewrap)>.row:first-child{padding:0 8px}
   header{padding-left:18px;padding-right:18px}.actions{gap:10px}
 }
+
+/* ===== 白底主題（頁首右上角切換，存在這台裝置） ===== */
+#themeBtn{position:absolute;right:16px;top:calc(14px + env(safe-area-inset-top));min-height:38px;padding:6px 12px;font-size:13px;border-radius:999px;z-index:2}
+header{color:var(--text)}header h1{padding-right:96px}
+#numBar{color:var(--text)}#numBar #nbDrag{color:var(--text)}
+html[data-theme="light"]{--bg:#F4F4F5;--surface:#FFFFFF;--surface-2:#F4F4F5;--surface-3:#E4E4E7;--border:rgba(0,0,0,.07);--border-2:rgba(0,0,0,.12);
+  --text:#18181B;--muted:#52525B;--faint:#A1A1AA;--accent-2:#2563EB;--accent-soft:rgba(59,130,246,.12);--ok:#16A34A;--bad:#DC2626;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 10px 30px -14px rgba(0,0,0,.18);--shadow-lg:0 2px 4px rgba(0,0,0,.06),0 18px 40px -18px rgba(0,0,0,.28);color-scheme:light}
+html[data-theme="light"] header{background:rgba(255,255,255,.82)}
+html[data-theme="light"] input:focus,html[data-theme="light"] textarea:focus,html[data-theme="light"] select:focus{background:#fff}
+html[data-theme="light"] th,html[data-theme="light"] th.c-sel{background:#F4F4F5}
+html[data-theme="light"] .danger{background:rgba(220,38,38,.07);color:#DC2626;border-color:rgba(220,38,38,.18)}
+html[data-theme="light"] .voice.recording{background:#BE123C}
+html[data-theme="light"] .notice,html[data-theme="light"] .hbody{color:#3F3F46}
+html[data-theme="light"] .hbody .note{background:rgba(251,191,36,.14);color:#92400E;border-color:rgba(217,119,6,.25)}
+html[data-theme="light"] .tab.active{color:#1D4ED8}
+html[data-theme="light"] #selBar{background:rgba(255,255,255,.94)}
+html[data-theme="light"] #numBar{background:rgba(255,255,255,.95);box-shadow:0 -10px 30px -14px rgba(0,0,0,.25)}
+html[data-theme="light"] #rvHint{background:rgba(255,255,255,.97)}
+html[data-theme="light"] tr.miss td{background:rgba(251,191,36,.16)}
+html[data-theme="light"] #sheetBody{border:1px solid var(--border-2)}
 </style>
 <script>(function(){   // 圖示字型「真的下載完成」才顯示圖示；沒網路時只顯示文字，不會出現 save、mic 這類英文字
   var h=document.documentElement,chk=function(){try{var ok=false;document.fonts.forEach(function(f){if(f.family.replace(/["']/g,'')==='Material Symbols Outlined'&&f.status==='loaded')ok=true;});if(ok)h.classList.add('ic');}catch(e){}};
@@ -249,6 +271,7 @@ th,td{padding:8px 5px}td input,td select{padding:9px 8px}
 </head>
 <body>
 <header>
+  <button id="themeBtn" class="secondary" type="button" data-icon="light_mode" aria-label="切換白底／黑底">白底</button>
   <h1><span class="ms" aria-hidden="true">dark_mode</span>夜班小幫手</h1>
   <p>語音填表・自動判斷・可新增/刪除項目・歷史紀錄</p>
 </header>
@@ -2009,7 +2032,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v58（2026-10-29）';
+const APP_VER='v59（2026-10-29）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -2325,6 +2348,7 @@ const HELP=[
 ['6　類別、顯示與欄寬',`<ul>
 <li>「⚙ 表格設定」：<b>顯示欄位</b>（只影響目前分頁，點一下隱藏或顯示整欄）、<b>顯示類別</b>（隱藏的類別不會出現在表格、逐項報數和漏填檢查，資料仍保留）、依類別排列。</li>
 <li>「🏷 編輯類別」：新增、改名、換顏色、調順序、刪除；<b>每個分頁各自獨立</b>。</li>
+<li>頁首右上角的「<b>白底／黑底</b>」鍵：切換畫面底色，只影響這台裝置，會記住設定。</li>
 <li>「↔ 調整欄位寬度」：調整類別、項目、標準、實際值、前次值的寬度；「左右邊界」調小可讓表格更寬，只影響這台裝置。</li>
 </ul>`],
 ['7　抄表排版（手抄單）',`<ul>
@@ -2359,6 +2383,14 @@ function renderHelp(){
   $('helpVer').textContent='App 版本：'+APP_VER;
   $('helpBody').innerHTML=HELP.map((h,i)=>'<details class="colctl"'+(i===0?' open':'')+'><summary><b>'+h[0]+'</b></summary><div class="hbody">'+h[1]+'</div></details>').join('');
 }
+function applyTheme(t){   // 白底／黑底：存在這台裝置
+  const light=t==='light',h=document.documentElement;
+  if(light)h.setAttribute('data-theme','light');else h.removeAttribute('data-theme');
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.content=light?'#F4F4F5':'#18181B';
+  const b=$('themeBtn');b.textContent=light?'黑底':'白底';b.dataset.icon=light?'dark_mode':'light_mode';
+}
+let uiTheme=lsGet('wasteInspectionTheme','dark')==='light'?'light':'dark';applyTheme(uiTheme);
+$('themeBtn').addEventListener('click',()=>{uiTheme=uiTheme==='light'?'dark':'light';lsSet('wasteInspectionTheme',uiTheme);applyTheme(uiTheme);});
 $('helpBtn').addEventListener('click',()=>{renderHelp();$('helpCard').classList.remove('hidden');$('helpCard').scrollIntoView({block:'start',behavior:'smooth'});});
 $('helpClose').addEventListener('click',()=>$('helpCard').classList.add('hidden'));
 $('helpDl').addEventListener('click',async()=>{
