@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="晨報小幫手">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f4f5f7">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>晨報小幫手</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1a1c20;--mut:#6b7280;--ac:#0b6bcb;--bd:#d9dce1;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161a;--card:#1e2126;--tx:#eceef2;--mut:#9aa1ad;--ac:#4a9eff;--bd:#33373e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14161a;--card:#1e2126;--tx:#eceef2;--mut:#9aa1ad;--ac:#4a9eff;--bd:#33373e;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;padding:14px;max-width:640px;margin-inline:auto}
+h1{font-size:19px;margin:4px 0 12px;display:flex;align-items:center;gap:8px}
+h1 img{width:30px;height:30px;border-radius:8px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:12px}
+label{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px}
+input[type=text],input[type=date]{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font-size:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button,.btn{flex:1;min-width:110px;padding:13px 10px;border:0;border-radius:12px;background:var(--ac);color:#fff;font-size:16px;font-weight:600;text-align:center;cursor:pointer}
+.btn.sec,button.sec{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}
+button:disabled{opacity:.4}
+input[type=file]{display:none}
+.fname{font-size:13px;color:var(--mut);word-break:break-all;margin-top:8px}
+.pages{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.pg{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:6px}
+.pg img{width:100%;aspect-ratio:210/297;object-fit:contain;background:#fff;border-radius:6px;display:block}
+.pg .bar{display:flex;gap:4px;margin-top:6px;align-items:center}
+.pg .bar span{font-size:12px;color:var(--mut);flex:1}
+.pg .bar button{min-width:0;flex:0;padding:6px 9px;font-size:14px;background:var(--card);color:var(--tx);border:1px solid var(--bd)}
+.chk{display:flex;align-items:center;gap:8px;margin-top:10px}
+.chk input{width:20px;height:20px}
+#msg{font-size:14px;margin-top:8px;min-height:20px}
+#ver{font-size:12px;color:var(--mut);text-align:center;margin:18px 0 6px}
+.empty{color:var(--mut);text-align:center;padding:24px 0;font-size:14px}
+.ov{position:fixed;inset:0;background:#000;z-index:50;display:none;flex-direction:column;color:#fff}
+.ov.on{display:flex}
+.ov .top{padding:calc(10px + env(safe-area-inset-top,0px)) 14px 8px;font-size:14px;text-align:center;min-height:44px}
+.ov .mid{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.ov .bot{padding:12px 14px calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:center}
+.ov .bot button{background:#2a2d33;color:#fff;border:1px solid #444}
+.ov .bot button.shot{background:#fff;color:#000;flex:0 0 72px;height:72px;border-radius:50%;min-width:0;padding:0;font-size:13px}
+.wrap{position:relative;width:100%}
+#vid{width:100%;display:block}
+#ovl{position:absolute;left:0;top:0;width:100%;height:100%}
+#edc{touch-action:none;max-width:100%}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s}
+</style>
+</head>
+<body>
+<h1><img src="icon-180.png" alt="">晨報小幫手</h1>
+
+<div class="card">
+  <label>日期（預設為前一日）</label>
+  <input type="date" id="date">
+  <label>檔名（日期之後的文字）</label>
+  <input type="text" id="title" value="B廠值班交接記錄及FMCS系統checklist">
+  <div class="fname" id="fname"></div>
+</div>
+
+<div class="card">
+  <div class="row">
+    <button id="live">🎥 即時掃描（自動對框）</button>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <label class="btn sec" for="cam" style="margin:0">📷 系統相機</label>
+    <label class="btn sec" for="gal" style="margin:0">🖼 相簿</label>
+  </div>
+  <input type="file" id="cam" accept="image/*" capture="environment">
+  <input type="file" id="gal" accept="image/*" multiple>
+  <label style="margin-top:12px;color:var(--tx);font-size:15px">色彩模式</label>
+  <select id="enh" style="width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font-size:16px"><option value="color" selected>彩色增強（保留色彩、紙張變白）</option><option value="none">原色（不處理）</option><option value="gray">灰階增強（黑白文件）</option></select>
+  <label style="margin-top:12px;color:var(--tx);font-size:15px">裁邊內縮：<span id="insv">1.5</span>%（紙張邊緣有底色時調大）</label>
+  <input type="range" id="inset" min="0" max="6" step="0.5" value="1.5" style="width:100%">
+</div>
+
+<div class="card">
+  <div id="pages" class="pages"></div>
+  <div id="empty" class="empty">尚未加入頁面</div>
+</div>
+
+<div class="row">
+  <button id="prev" class="sec" disabled>👁 預覽</button>
+  <button id="make" disabled>產生並儲存 PDF</button>
+  <button id="clear" class="sec" disabled>全部清除</button>
+</div>
+<div id="msg"></div>
+<div id="ver"></div>
+
+<div class="ov" id="camov">
+  <div class="top" id="camtxt">將 A4 放進畫面，出現綠框並穩住約 1 秒會自動拍照</div>
+  <div class="mid"><div class="wrap"><video id="vid" playsinline muted autoplay></video><canvas id="ovl"></canvas><div id="flash"></div></div></div>
+  <div class="bot">
+    <button id="autoBtn">自動：開</button>
+    <button class="shot" id="shot">拍照</button>
+    <button id="camDone">完成 (0)</button>
+  </div>
+</div>
+
+<div class="ov" id="pvov">
+  <div class="top" id="pvname"></div>
+  <div id="pvbox" style="flex:1;overflow-y:auto;padding:4px 14px"></div>
+  <div class="bot"><button id="pvClose">關閉</button><button id="pvSave" style="background:#0b6bcb;border-color:#0b6bcb">儲存 PDF</button></div>
+</div>
+
+<div class="ov" id="edov">
+  <div class="top">拖曳四個圓點對齊紙張四角</div>
+  <div class="mid"><canvas id="edc"></canvas></div>
+  <div class="bot">
+    <button id="edAuto">自動偵測</button>
+    <button id="edCancel">取消</button>
+    <button id="edOk" style="background:#0b6bcb;border-color:#0b6bcb">完成</button>
+  </div>
+</div>
+
+<script>
+const APP_VER='v1（2026-10-30）';
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  $('ver').textContent='晨報小幫手 '+APP_VER;
+  var pages=[], DEF=[[.03,.03],[.97,.03],[.97,.97],[.03,.97]];
+  function pad(n){return String(n).padStart(2,'0')}
+  function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+  var y=new Date(); y.setDate(y.getDate()-1); $('date').value=ymd(y);
+  function fileName(){
+    var d=($('date').value||ymd(y)).replace(/-/g,''),t=($('title').value||'').trim();
+    return (d+(t?' '+t:'')).replace(/[\\/:*?"<>|]/g,'_')+'.pdf';
+  }
+  function upd(){
+    $('fname').textContent='檔名：'+fileName();
+    $('empty').style.display=pages.length?'none':'block';
+    $('prev').disabled=$('make').disabled=$('clear').disabled=!pages.length;
+  }
+  $('date').oninput=$('title').oninput=upd;
+
+  /* ---------- 邊緣偵測（亮色紙張最大連通區塊） ---------- */
+  var dc=document.createElement('canvas');
+  function blur(a,W,H){var b=new Float32Array(a.length),c=new Float32Array(a.length),x,y,i;
+    for(y=0;y<H;y++)for(x=0;x<W;x++){i=y*W+x;b[i]=(a[x>0?i-1:i]+a[i]+a[x<W-1?i+1:i])/3}
+    for(y=0;y<H;y++)for(x=0;x<W;x++){i=y*W+x;c[i]=(b[y>0?i-W:i]+b[i]+b[y<H-1?i+W:i])/3}
+    return c}
+  /* 邊緣線偵測：Sobel + Hough 找直線，列舉四邊形，依「四邊是否真的貼著邊緣」評分 */
+  function detect(el,sw,sh,loose){
+    var W=240,H=Math.max(1,Math.round(W*sh/sw)),N=W*H,i,x,y,k;
+    dc.width=W;dc.height=H;
+    var cx=dc.getContext('2d',{willReadFrequently:true});cx.drawImage(el,0,0,W,H);
+    var d=cx.getImageData(0,0,W,H).data,g=new Float32Array(N);
+    for(i=0;i<N;i++)g[i]=d[i*4]*.299+d[i*4+1]*.587+d[i*4+2]*.114;
+    g=blur(blur(g,W,H),W,H);
+    var mag=new Float32Array(N),ux=new Float32Array(N),uy=new Float32Array(N),hist=new Uint32Array(256);
+    for(y=1;y<H-1;y++)for(x=1;x<W-1;x++){i=y*W+x;
+      var gx=g[i-W+1]+2*g[i+1]+g[i+W+1]-g[i-W-1]-2*g[i-1]-g[i+W-1];
+      var gy=g[i+W-1]+2*g[i+W]+g[i+W+1]-g[i-W-1]-2*g[i-W]-g[i-W+1];
+      var m=Math.sqrt(gx*gx+gy*gy);mag[i]=m;if(m>0){ux[i]=gx/m;uy[i]=gy/m}
+      hist[Math.min(255,(m/4)|0)]++}
+    var cum=0,thr=24;
+    for(i=0;i<256;i++){cum+=hist[i];if(cum>=.85*N){thr=Math.max(24,i*4);break}}
+    var thr2=Math.min(30,Math.max(10,thr*.25)),thrH=Math.min(thr,Math.max(14,thr*.4));
+    var D=Math.ceil(Math.sqrt(W*W+H*H)),R=2*D+1,KB=90,acc=new Float32Array(KB*R),cs=[],sn=[];
+    for(k=0;k<KB;k++){cs[k]=Math.cos(k*Math.PI/KB);sn[k]=Math.sin(k*Math.PI/KB)}
+    for(y=2;y<H-2;y++)for(x=2;x<W-2;x++){i=y*W+x;if(mag[i]<thrH)continue;
+      var ph=Math.atan2(uy[i],ux[i]);if(ph<0)ph+=Math.PI;if(ph>=Math.PI)ph-=Math.PI;
+      var k0=Math.round(ph/Math.PI*KB);
+      for(var dk=-4;dk<=4;dk++){var kk=((k0+dk)%KB+KB)%KB;
+        acc[kk*R+Math.round(x*cs[kk]+y*sn[kk])+D]+=1}}
+    var mx=0;for(i=0;i<acc.length;i++)if(acc[i]>mx)mx=acc[i];
+    if(mx<=0)return null;
+    var cells=[];for(i=0;i<acc.length;i++)if(acc[i]>.2*mx)cells.push(i);
+    cells.sort(function(a,b){return acc[b]-acc[a]});
+    var lines=[];
+    for(var ci=0;ci<cells.length&&lines.length<20;ci++){
+      var kk2=(cells[ci]/R)|0,rr=cells[ci]%R-D,ok=true;
+      for(var li=0;li<lines.length;li++){var L=lines[li],da=Math.abs(L.t-kk2*Math.PI/KB),wrap=da>Math.PI/2;
+        var dth=Math.min(da,Math.PI-da),dr=Math.abs(L.r-(wrap?-rr:rr));
+        if(dth<12*Math.PI/180&&dr<8){ok=false;break}}
+      if(ok)lines.push({t:kk2*Math.PI/KB,r:rr,c:cs[kk2],s:sn[kk2]});
+    }
+    function adiff(a,b){var q=Math.abs(a.t-b.t);return Math.min(q,Math.PI-q)}
+    var PP=[],mn=Math.min(W,H);
+    for(i=0;i<lines.length;i++)for(var j=i+1;j<lines.length;j++){
+      if(adiff(lines[i],lines[j])>20*Math.PI/180)continue;
+      var flip=Math.abs(lines[i].t-lines[j].t)>Math.PI/2,sep=Math.abs(lines[i].r-(flip?-lines[j].r:lines[j].r));
+      if(sep>.18*mn)PP.push([lines[i],lines[j]]);
+    }
+    function inter(a,b){var det=a.c*b.s-a.s*b.c;if(Math.abs(det)<.25)return null;
+      return [(a.r*b.s-a.s*b.r)/det,(a.c*b.r-b.c*a.r)/det]}
+    function order(P){var s=P.map(function(p){return p[0]+p[1]}),df=P.map(function(p){return p[0]-p[1]});
+      var idx=[s.indexOf(Math.min.apply(0,s)),df.indexOf(Math.max.apply(0,df)),s.indexOf(Math.max.apply(0,s)),df.indexOf(Math.min.apply(0,df))];
+      if(new Set(idx).size<4)return null;return idx.map(function(t){return P[t]})}
+    function sideSup(A,B){var dx=B[0]-A[0],dy=B[1]-A[1],Ln=Math.hypot(dx,dy)||1,nx=-dy/Ln,ny=dx/Ln,hit=0;
+      for(var t=0;t<36;t++){var f=.06+.88*t/35,X=Math.round(A[0]+dx*f),Y=Math.round(A[1]+dy*f);
+        if(X<2||Y<2||X>W-3||Y>H-3){hit++;continue}
+        var ok=false;
+        for(var oy=-1;oy<=1&&!ok;oy++)for(var ox=-1;ox<=1;ox++){var jj=(Y+oy)*W+X+ox;
+          if(mag[jj]>thr2&&Math.abs(ux[jj]*nx+uy[jj]*ny)>.75){ok=true;break}}
+        if(ok)hit++}
+      return hit/36}
+    function score(P){
+      for(var t=0;t<4;t++)if(P[t][0]<-.04*W||P[t][0]>1.04*W||P[t][1]<-.04*H||P[t][1]>1.04*H)return -1;
+      var ar=0;for(t=0;t<4;t++){var u=(t+1)%4;ar+=P[t][0]*P[u][1]-P[u][0]*P[t][1]}ar=Math.abs(ar)/2;
+      if(ar<.2*N)return -1;
+      var dd=function(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1])};
+      var w=(dd(P[0],P[1])+dd(P[3],P[2]))/2,h=(dd(P[0],P[3])+dd(P[1],P[2]))/2,ra=Math.max(w,h)/Math.max(1,Math.min(w,h));
+      if(ra<1.22||ra>1.7)return -1;
+      var sp=[sideSup(P[0],P[1]),sideSup(P[1],P[2]),sideSup(P[2],P[3]),sideSup(P[3],P[0])],
+          mi=Math.min.apply(0,sp),me=(sp[0]+sp[1]+sp[2]+sp[3])/4;
+      if(mi<(loose?.28:.4)||me<(loose?.5:.62))return -1;
+      return (.5*mi+.5*me)*Math.pow(ar/N,.35)}
+    var bestS=-1,bestP=null;
+    for(i=0;i<PP.length;i++)for(j=i+1;j<PP.length;j++){
+      var p=PP[i],q=PP[j];
+      if(adiff(p[0],q[0])<65*Math.PI/180)continue;
+      var c=[inter(p[0],q[0]),inter(p[0],q[1]),inter(p[1],q[1]),inter(p[1],q[0])];
+      if(c.some(function(v){return !v}))continue;
+      var P=order(c);if(!P)continue;
+      var sc=score(P);if(sc>bestS){bestS=sc;bestP=P}
+    }
+    var bq=detectBlob(el,sw,sh);
+    if(bq){var BP=bq.map(function(v){return [v[0]*W,v[1]*H]}),bs=score(BP);if(bs>bestS){bestS=bs;bestP=BP}}
+    if(!bestP)return null;
+    return bestP.map(function(v){return [Math.min(1,Math.max(0,v[0]/W)),Math.min(1,Math.max(0,v[1]/H))]});
+  }
+  function detectBlob(el,sw,sh){
+    var W=200,H=Math.max(1,Math.round(W*sh/sw));
+    dc.width=W;dc.height=H;
+    var x=dc.getContext('2d',{willReadFrequently:true});x.drawImage(el,0,0,W,H);
+    var d=x.getImageData(0,0,W,H).data,N=W*H,g=new Uint8Array(N),h=new Float64Array(256),i;
+    for(i=0;i<N;i++){var v=(d[i*4]*.299+d[i*4+1]*.587+d[i*4+2]*.114)|0;g[i]=v;h[v]++}
+    var sum=0;for(i=0;i<256;i++)sum+=i*h[i];
+    var wB=0,sB=0,best=-1,t=128;
+    for(i=0;i<256;i++){wB+=h[i];if(!wB)continue;var wF=N-wB;if(!wF)break;sB+=i*h[i];
+      var mB=sB/wB,mF=(sum-sB)/wF,b=wB*wF*(mB-mF)*(mB-mF);if(b>best){best=b;t=i}}
+    var lab=new Uint8Array(N),st=new Int32Array(N),res=null,bestA=0;
+    for(var s=0;s<N;s++){
+      if(lab[s]||g[s]<=t)continue;
+      var sp=0,a=0;st[sp++]=s;lab[s]=1;
+      var tl=1e9,br=-1e9,tr=-1e9,bl=1e9,P=[0,0,0,0];
+      while(sp){
+        var p=st[--sp],px=p%W,py=(p/W)|0;a++;
+        var A=px+py,B=px-py;
+        if(A<tl){tl=A;P[0]=[px,py]}
+        if(A>br){br=A;P[2]=[px,py]}
+        if(B>tr){tr=B;P[1]=[px,py]}
+        if(B<bl){bl=B;P[3]=[px,py]}
+        if(px>0&&!lab[p-1]&&g[p-1]>t){lab[p-1]=1;st[sp++]=p-1}
+        if(px<W-1&&!lab[p+1]&&g[p+1]>t){lab[p+1]=1;st[sp++]=p+1}
+        if(py>0&&!lab[p-W]&&g[p-W]>t){lab[p-W]=1;st[sp++]=p-W}
+        if(py<H-1&&!lab[p+W]&&g[p+W]>t){lab[p+W]=1;st[sp++]=p+W}
+      }
+      if(a>bestA){bestA=a;res=P}
+    }
+    if(!res||bestA<N*.12)return null;
+    var qa=0;for(i=0;i<4;i++){var j=(i+1)%4;qa+=res[i][0]*res[j][1]-res[j][0]*res[i][1]}
+    qa=Math.abs(qa)/2;
+    if(qa<N*.12||bestA/qa<.6||qa>N*.985)return null;
+    return res.map(function(p){return [p[0]/W,p[1]/H]});
+  }
+
+  /* ---------- 透視校正成 A4 ---------- */
+  function homog(src,dst){
+    var A=[],i;
+    for(i=0;i<4;i++){
+      var u=dst[i][0],v=dst[i][1],x=src[i][0],yy=src[i][1];
+      A.push([u,v,1,0,0,0,-u*x,-v*x,x]);
+      A.push([0,0,0,u,v,1,-u*yy,-v*yy,yy]);
+    }
+    for(i=0;i<8;i++){
+      var m=i;for(var r=i+1;r<8;r++)if(Math.abs(A[r][i])>Math.abs(A[m][i]))m=r;
+      var tmp=A[i];A[i]=A[m];A[m]=tmp;
+      for(r=0;r<8;r++){if(r===i)continue;var f=A[r][i]/A[i][i];for(var c=i;c<9;c++)A[r][c]-=f*A[i][c]}
+    }
+    return A.map(function(r,k){return r[8]/r[k]});
+  }
+  function warp(src,q){
+    var sw=src.width,sh=src.height;
+    var P=q.map(function(p){return [p[0]*sw,p[1]*sh]});
+    var dist=function(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1])};
+    if(dist(P[0],P[1])>dist(P[0],P[3]))P=[P[3],P[0],P[1],P[2]];
+    var Wo=1240,Ho=1754;
+    var H=homog(P,[[0,0],[Wo,0],[Wo,Ho],[0,Ho]]);
+    var out=document.createElement('canvas');out.width=Wo;out.height=Ho;
+    var sd=src.getContext('2d').getImageData(0,0,sw,sh).data;
+    var ox=out.getContext('2d'),oi=ox.createImageData(Wo,Ho),od=oi.data;
+    for(var v=0;v<Ho;v++)for(var u=0;u<Wo;u++){
+      var w=H[6]*u+H[7]*v+1,fx=(H[0]*u+H[1]*v+H[2])/w,fy=(H[3]*u+H[4]*v+H[5])/w;
+      var o=(v*Wo+u)*4;
+      if(fx<0)fx=0;else if(fx>sw-1.01)fx=sw-1.01;
+      if(fy<0)fy=0;else if(fy>sh-1.01)fy=sh-1.01;
+      var x0=fx|0,y0=fy|0,ax=fx-x0,ay=fy-y0,i0=(y0*sw+x0)*4,i1=i0+4,i2=i0+sw*4,i3=i2+4;
+      for(var k=0;k<3;k++)od[o+k]=(sd[i0+k]*(1-ax)+sd[i1+k]*ax)*(1-ay)+(sd[i2+k]*(1-ax)+sd[i3+k]*ax)*ay;
+      od[o+3]=255;
+    }
+    ox.putImageData(oi,0,0);return out;
+  }
+  function enhance(c){
+    var ctx=c.getContext('2d'),im=ctx.getImageData(0,0,c.width,c.height),d=im.data,n=d.length/4,h=new Uint32Array(256),i;
+    for(i=0;i<d.length;i+=4){var g=(d[i]*.299+d[i+1]*.587+d[i+2]*.114)|0;d[i]=g;h[g]++}
+    var lo=0,hi=255,s=0,cut=n*.01;
+    for(i=0;i<256;i++){s+=h[i];if(s>cut){lo=i;break}}
+    s=0;for(i=255;i>=0;i--){s+=h[i];if(s>cut){hi=i;break}}
+    if(hi-lo<30){lo=0;hi=255}
+    var k=255/(hi-lo);
+    for(i=0;i<d.length;i+=4){var v=(d[i]-lo)*k;v=v<0?0:v>255?255:v;d[i]=d[i+1]=d[i+2]=v}
+    ctx.putImageData(im,0,0);
+  }
+  function enhanceColor(c){
+    var ctx=c.getContext('2d'),im=ctx.getImageData(0,0,c.width,c.height),d=im.data,n=d.length/4,i,k,v;
+    var H=[new Uint32Array(256),new Uint32Array(256),new Uint32Array(256)];
+    for(i=0;i<d.length;i+=4){H[0][d[i]]++;H[1][d[i+1]]++;H[2][d[i+2]]++}
+    function pc(h,f){var s=0,t=n*f;for(var u=0;u<256;u++){s+=h[u];if(s>=t)return u}return 255}
+    var HI=[pc(H[0],.9),pc(H[1],.9),pc(H[2],.9)],lut=[];
+    var lo=Math.max(0,Math.min(pc(H[0],.01),pc(H[1],.01),pc(H[2],.01),Math.min.apply(0,HI)-40));   // 幾乎全白的頁面不會被拉成全黑
+    for(k=0;k<3;k++){var hi=Math.max(lo+40,HI[k]),t=new Uint8Array(256);
+      for(v=0;v<256;v++){var r=(v-lo)*255/(hi-lo);t[v]=r<0?0:r>255?255:r}lut.push(t)}
+    for(i=0;i<d.length;i+=4){d[i]=lut[0][d[i]];d[i+1]=lut[1][d[i+1]];d[i+2]=lut[2][d[i+2]]}
+    ctx.putImageData(im,0,0);
+  }
+  function rotate(c){
+    var r=document.createElement('canvas');r.width=c.height;r.height=c.width;
+    var x=r.getContext('2d');x.translate(r.width/2,r.height/2);x.rotate(Math.PI/2);x.drawImage(c,-c.width/2,-c.height/2);
+    return r;
+  }
+  function shrink(q){var k=parseFloat($('inset').value)/100||0;if(!k)return q;var cx=0,cy=0,s=1-2*k;
+    q.forEach(function(v){cx+=v[0]/4;cy+=v[1]/4});
+    return q.map(function(v){return [cx+(v[0]-cx)*s,cy+(v[1]-cy)*s]})}
+  function build(p){
+    var o=warp(p.src,shrink(p.quad));
+    var em=$('enh').value;if(em==='gray')enhance(o);else if(em==='color')enhanceColor(o);
+    for(var i=0;i<p.rot;i++)o=rotate(o);
+    p.out=o;
+  }
+  function addPage(src,q){var p={src:src,quad:q,rot:0};build(p);pages.push(p);render()}
+
+  /* ---------- 頁面清單 ---------- */
+  function render(){
+    var box=$('pages');box.innerHTML='';
+    pages.forEach(function(p,i){
+      var d=document.createElement('div');d.className='pg';
+      var im=document.createElement('img');im.src=p.out.toDataURL('image/jpeg',.4);
+      var bar=document.createElement('div');bar.className='bar';
+      var sp=document.createElement('span');sp.textContent='第 '+(i+1)+' 頁';
+      bar.appendChild(sp);
+      function b(t,f){var x=document.createElement('button');x.textContent=t;x.onclick=f;bar.appendChild(x)}
+      b('✎',function(){openEd(p)});
+      b('⟳',function(){p.rot=(p.rot+1)%4;build(p);render()});
+      b('←',function(){if(i>0){pages.splice(i-1,0,pages.splice(i,1)[0]);render()}});
+      b('✕',function(){pages.splice(i,1);render()});
+      d.appendChild(im);d.appendChild(bar);box.appendChild(d);
+    });
+    upd();
+  }
+  $('clear').onclick=function(){if(confirm('清除全部頁面？')){pages=[];render()}};
+  $('prev').onclick=function(){
+    var b=$('pvbox');b.innerHTML='';
+    pages.forEach(function(p,i){
+      var im=document.createElement('img');im.src=p.out.toDataURL('image/jpeg',.8);
+      im.style.cssText='width:100%;display:block;background:#fff;margin-bottom:6px;border-radius:4px';
+      var t=document.createElement('div');t.textContent='第 '+(i+1)+' / '+pages.length+' 頁';
+      t.style.cssText='font-size:12px;color:#aaa;margin-bottom:12px';
+      b.appendChild(im);b.appendChild(t);
+    });
+    $('pvname').textContent=fileName();$('pvov').classList.add('on');
+  };
+  $('pvClose').onclick=function(){$('pvov').classList.remove('on')};
+  $('pvSave').onclick=function(){$('pvov').classList.remove('on');$('make').click()};
+  $('inset').oninput=function(){$('insv').textContent=this.value};
+  $('enh').onchange=function(){$('inset').onchange()};
+  $('inset').onchange=function(){$('msg').textContent='重新處理中…';setTimeout(function(){pages.forEach(build);render();$('msg').textContent=''},30)};
+
+  /* ---------- 檔案匯入 ---------- */
+  function loadFile(file){
+    return new Promise(function(res,rej){
+      var u=URL.createObjectURL(file),img=new Image();
+      img.onload=function(){
+        var M=2000,s=Math.min(1,M/Math.max(img.naturalWidth,img.naturalHeight));
+        var c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*s);c.height=Math.round(img.naturalHeight*s);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c);
+      };
+      img.onerror=function(){rej(new Error('無法讀取圖片'))};img.src=u;
+    });
+  }
+  async function addFiles(files){
+    $('msg').textContent='處理中…';var miss=0,lastMiss=false;
+    for(var i=0;i<files.length;i++){
+      try{var c=await loadFile(files[i]);var q=detect(c,c.width,c.height,true);lastMiss=!q;if(!q){miss++;q=DEF}addPage(c,q)}
+      catch(e){$('msg').textContent=e.message;return}
+    }
+    $('msg').textContent=miss?'有 '+miss+' 頁未偵測到紙張邊緣，可點 ✎ 手動調整四角':'';if(lastMiss)openEd(pages[pages.length-1]);
+  }
+  $('cam').onchange=function(e){addFiles(e.target.files);e.target.value=''};
+  $('gal').onchange=function(e){addFiles(e.target.files);e.target.value=''};
+
+  /* ---------- 即時掃描 ---------- */
+  var vid=$('vid'),ovl=$('ovl'),stream=null,timer=null,auto=true,live={q:null,last:null,stable:0,cool:0,n:0};
+  var NEED=6;
+  $('live').onclick=async function(){
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('msg').textContent='此環境無法使用即時相機，請改用「系統相機」（同樣會自動裁切）';return}
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
+    }catch(e){$('msg').textContent='無法開啟相機（'+(e.name||'錯誤')+'），請改用「系統相機」按鈕（同樣會自動裁切）';return}
+    vid.srcObject=stream;try{await vid.play()}catch(e){}
+    live={q:null,last:null,stable:0,cool:Date.now()+800,n:0};$('camDone').textContent='完成 (0)';
+    $('camov').classList.add('on');timer=setInterval(tick,180);
+  };
+  function closeCam(){
+    clearInterval(timer);if(stream)stream.getTracks().forEach(function(t){t.stop()});stream=null;
+    $('camov').classList.remove('on');
+  }
+  $('camDone').onclick=function(){closeCam();if(live.n)$('msg').textContent='已加入 '+live.n+' 頁'};
+  $('autoBtn').onclick=function(){auto=!auto;$('autoBtn').textContent='自動：'+(auto?'開':'關');live.stable=0};
+  function tick(){
+    if(!vid.videoWidth)return;
+    var q=detect(vid,vid.videoWidth,vid.videoHeight);
+    var W=ovl.width=ovl.clientWidth,H=ovl.height=ovl.clientHeight,x=ovl.getContext('2d');
+    x.clearRect(0,0,W,H);
+    if(q){
+      if(live.last){
+        var m=0;for(var i=0;i<4;i++)m=Math.max(m,Math.hypot(q[i][0]-live.last[i][0],q[i][1]-live.last[i][1]));
+        live.stable=m<.03?live.stable+1:0;
+      }
+      live.last=q;live.q=q;
+    }else{live.last=null;live.q=null;live.stable=0}
+    if(q){
+      var pr=Math.min(1,live.stable/NEED);
+      x.beginPath();q.forEach(function(p,i){i?x.lineTo(p[0]*W,p[1]*H):x.moveTo(p[0]*W,p[1]*H)});x.closePath();
+      x.fillStyle='rgba(60,220,120,'+(.12+.2*pr)+')';x.fill();
+      x.lineWidth=4;x.strokeStyle=pr>=1?'#3cdc78':'#ffd23c';x.stroke();
+    }
+    $('camtxt').textContent=!q?'將 A4 放進畫面（背景與紙張對比越明顯越好）':(auto?(live.stable>=NEED?'拍攝中…':'已偵測到紙張，請保持穩定'):'已偵測到紙張，按拍照');
+    if(q&&auto&&live.stable>=NEED&&Date.now()>live.cool)shoot();
+  }
+  function shoot(){
+    var vw=vid.videoWidth,vh=vid.videoHeight;if(!vw)return;
+    var s=Math.min(1,2000/Math.max(vw,vh)),c=document.createElement('canvas');
+    c.width=Math.round(vw*s);c.height=Math.round(vh*s);c.getContext('2d').drawImage(vid,0,0,c.width,c.height);
+    var q=live.q||detect(c,c.width,c.height)||DEF;
+    addPage(c,q);live.n++;live.stable=0;live.cool=Date.now()+2200;
+    $('camDone').textContent='完成 ('+live.n+')';
+    var f=$('flash');f.style.opacity=.8;setTimeout(function(){f.style.opacity=0},120);
+    if(navigator.vibrate)navigator.vibrate(40);
+  }
+  $('shot').onclick=shoot;
+
+  /* ---------- 手動調整四角 ---------- */
+  var ed={p:null,q:null,drag:-1},edc=$('edc');
+  function openEd(p){
+    ed.p=p;ed.q=p.quad.map(function(a){return a.slice()});
+    $('edov').classList.add('on');
+    var s=Math.min((innerWidth-24)/p.src.width,(innerHeight-190)/p.src.height);
+    edc.width=Math.round(p.src.width*s);edc.height=Math.round(p.src.height*s);drawEd();
+  }
+  function drawEd(){
+    var x=edc.getContext('2d'),W=edc.width,H=edc.height;
+    x.drawImage(ed.p.src,0,0,W,H);
+    x.beginPath();ed.q.forEach(function(p,i){i?x.lineTo(p[0]*W,p[1]*H):x.moveTo(p[0]*W,p[1]*H)});x.closePath();
+    x.fillStyle='rgba(60,220,120,.15)';x.fill();x.lineWidth=3;x.strokeStyle='#3cdc78';x.stroke();
+    ed.q.forEach(function(p){x.beginPath();x.arc(p[0]*W,p[1]*H,14,0,7);x.fillStyle='#fff';x.fill();x.lineWidth=3;x.strokeStyle='#0b6bcb';x.stroke()});
+  }
+  function pt(e){var r=edc.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]}
+  edc.onpointerdown=function(e){
+    var p=pt(e),m=1e9;ed.drag=-1;
+    ed.q.forEach(function(c,i){var d=Math.hypot((c[0]-p[0])*edc.width,(c[1]-p[1])*edc.height);if(d<m&&d<50){m=d;ed.drag=i}});
+    if(ed.drag>=0)edc.setPointerCapture(e.pointerId);
+  };
+  edc.onpointermove=function(e){
+    if(ed.drag<0)return;var p=pt(e);
+    ed.q[ed.drag]=[Math.min(1,Math.max(0,p[0])),Math.min(1,Math.max(0,p[1]))];drawEd();
+  };
+  edc.onpointerup=function(){ed.drag=-1};
+  $('edAuto').onclick=function(){var q=detect(ed.p.src,ed.p.src.width,ed.p.src.height,true);if(q){ed.q=q;drawEd()}};
+  $('edCancel').onclick=function(){$('edov').classList.remove('on')};
+  $('edOk').onclick=function(){ed.p.quad=ed.q;build(ed.p);$('edov').classList.remove('on');render()};
+
+  /* ---------- 輸出 PDF（iPhone 用分享面板「儲存到檔案」，其他瀏覽器直接下載） ---------- */
+  $('make').onclick=async function(){
+    var btn=$('make');btn.disabled=true;$('msg').textContent='產生 PDF 中…';
+    try{
+      var J=window.jspdf.jsPDF,doc=new J({unit:'mm',format:'a4',orientation:'portrait'});
+      pages.forEach(function(p,i){
+        if(i)doc.addPage('a4','portrait');
+        var c=p.out,W=210,H=297,r=Math.min(W/c.width,H/c.height),w=c.width*r,h=c.height*r;
+        doc.addImage(c.toDataURL('image/jpeg',.85),'JPEG',(W-w)/2,(H-h)/2,w,h,undefined,'FAST');
+      });
+      var blob=doc.output('blob'),name=fileName();
+      var f=new File([blob],name,{type:'application/pdf'});
+      if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});$('msg').textContent='✅ 已分享'}
+      else{var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();$('msg').textContent='✅ 已下載：'+name}
+    }catch(e){$('msg').textContent=(e&&e.name==='AbortError')?'已取消儲存':'失敗：'+((e&&e.message)||e)}
+    btn.disabled=false;
+  };
+  upd();
+})();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+</body>
+</html>
