@@ -7,47 +7,63 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="晨報小幫手">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f4f5f7">
+<meta name="theme-color" content="#f5f6f8">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300,0,0&display=block">
 <title>晨報小幫手</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root{--bg:#f4f5f7;--card:#fff;--tx:#1a1c20;--mut:#6b7280;--ac:#0b6bcb;--bd:#d9dce1;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161a;--card:#1e2126;--tx:#eceef2;--mut:#9aa1ad;--ac:#4a9eff;--bd:#33373e;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#14161a;--card:#1e2126;--tx:#eceef2;--mut:#9aa1ad;--ac:#4a9eff;--bd:#33373e;color-scheme:dark}
+:root{--bg:#f5f6f8;--card:#fff;--tx:#1a1c20;--mut:#6b7280;--ac:#0b6bcb;--acs:rgba(11,107,203,.10);--bd:#e6e8ec;--fld:#f5f6f8;
+  --sh:0 1px 2px rgba(16,24,40,.04),0 8px 24px rgba(16,24,40,.06);--shb:0 4px 14px rgba(11,107,203,.25);
+  color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121418;--card:#1c1f25;--tx:#eceef2;--mut:#9aa1ad;--ac:#4a9eff;--acs:rgba(74,158,255,.14);--bd:#2c3037;--fld:#24282f;
+  --sh:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);--shb:0 4px 14px rgba(74,158,255,.25);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121418;--card:#1c1f25;--tx:#eceef2;--mut:#9aa1ad;--ac:#4a9eff;--acs:rgba(74,158,255,.14);--bd:#2c3037;--fld:#24282f;
+  --sh:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);--shb:0 4px 14px rgba(74,158,255,.25);color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;padding:14px;max-width:640px;margin-inline:auto}
-h1{font-size:19px;margin:4px 0 12px;display:flex;align-items:center;gap:8px}
-h1 img{width:30px;height:30px;border-radius:8px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:12px}
-label{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px}
-input[type=text],input[type=date]{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font-size:16px}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-button,.btn{flex:1;min-width:110px;padding:13px 10px;border:0;border-radius:12px;background:var(--ac);color:#fff;font-size:16px;font-weight:600;text-align:center;cursor:pointer}
-.btn.sec,button.sec{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}
-button:disabled{opacity:.4}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;padding:24px 20px 32px;max-width:640px;margin-inline:auto;-webkit-tap-highlight-color:transparent}
+.ms{font-family:'Material Symbols Rounded';font-weight:300;font-style:normal;font-size:22px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;flex:none}
+h1{font-size:22px;font-weight:700;margin:4px 4px 24px;letter-spacing:.5px}
+.card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:var(--sh)}
+.card h2{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;margin:0 0 16px;color:var(--tx)}
+.card h2 .ms{color:var(--ac);font-size:20px}
+label{display:block;font-size:13px;color:var(--mut);margin:16px 0 8px}
+label:first-of-type{margin-top:0}
+input[type=text],input[type=date],select{width:100%;padding:12px 14px;border:1px solid transparent;border-radius:12px;background:var(--fld);color:var(--tx);font-size:16px;outline:none;transition:border-color .15s,background .15s}
+input[type=text]:focus,input[type=date]:focus,select:focus{border-color:var(--ac);background:var(--card)}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+button,.btn{flex:1;min-width:110px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 16px;border:0;border-radius:16px;background:var(--ac);color:#fff;font-size:16px;font-weight:600;text-align:center;cursor:pointer;box-shadow:var(--shb);transition:transform .1s,opacity .15s}
+button:active,.btn:active{transform:scale(.97)}
+.btn.sec,button.sec{background:var(--card);color:var(--tx);border:1px solid var(--bd);box-shadow:var(--sh)}
+.btn.sec .ms,button.sec .ms{color:var(--ac)}
+button:disabled{opacity:.4;box-shadow:none}
+#make{flex-basis:100%;order:-1}
 input[type=file]{display:none}
-.fname{font-size:13px;color:var(--mut);word-break:break-all;margin-top:8px}
-.pages{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.pg{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:6px}
-.pg img{width:100%;aspect-ratio:210/297;object-fit:contain;background:#fff;border-radius:6px;display:block}
-.pg .bar{display:flex;gap:4px;margin-top:6px;align-items:center}
-.pg .bar span{font-size:12px;color:var(--mut);flex:1}
-.pg .bar button{min-width:0;flex:0;padding:6px 9px;font-size:14px;background:var(--card);color:var(--tx);border:1px solid var(--bd)}
-.chk{display:flex;align-items:center;gap:8px;margin-top:10px}
-.chk input{width:20px;height:20px}
-#msg{font-size:14px;margin-top:8px;min-height:20px}
-#ver{font-size:12px;color:var(--mut);text-align:center;margin:18px 0 6px}
-.empty{color:var(--mut);text-align:center;padding:24px 0;font-size:14px}
+input[type=range]{width:100%;accent-color:var(--ac)}
+.fname{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--mut);word-break:break-all;margin-top:16px;padding:12px 14px;border-radius:12px;background:var(--acs)}
+.fname .ms{font-size:18px;color:var(--ac)}
+.pages{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.pg{background:var(--fld);border-radius:16px;padding:10px}
+.pg img{width:100%;aspect-ratio:210/297;object-fit:contain;background:#fff;border-radius:10px;display:block;box-shadow:var(--sh)}
+.pg .bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
+.pg .bar span.n{font-size:12px;color:var(--mut);flex:1 1 100%;padding-left:2px}
+.pg .bar button{min-width:0;flex:1 1 0;height:36px;padding:0;border-radius:10px;background:var(--card);color:var(--tx);border:1px solid var(--bd);box-shadow:none}
+.pg .bar button .ms{font-size:19px}
+#msg{font-size:14px;margin-top:16px;min-height:20px;text-align:center}
+#ver{font-size:12px;color:var(--mut);text-align:center;margin:28px 0 6px}
+.empty{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--mut);padding:32px 0;font-size:14px}
+.empty .ms{font-size:44px;opacity:.5}
 .ov{position:fixed;inset:0;background:#000;z-index:50;display:none;flex-direction:column;color:#fff}
 .ov.on{display:flex}
-.ov .top{padding:calc(10px + env(safe-area-inset-top,0px)) 14px 8px;font-size:14px;text-align:center;min-height:44px}
+.ov .top{padding:calc(14px + env(safe-area-inset-top,0px)) 20px 12px;font-size:14px;text-align:center;min-height:48px}
 .ov .mid{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.ov .bot{padding:12px 14px calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:center}
-.ov .bot button{background:#2a2d33;color:#fff;border:1px solid #444}
-.ov .bot button.shot{background:#fff;color:#000;flex:0 0 72px;height:72px;border-radius:50%;min-width:0;padding:0;font-size:13px}
+.ov .bot{padding:16px 20px calc(20px + env(safe-area-inset-bottom,0px));display:flex;gap:12px;align-items:center}
+.ov .bot button{background:rgba(255,255,255,.12);color:#fff;border:0;box-shadow:none;font-size:15px}
+.ov .bot button.pri{background:#0b6bcb}
+.ov .bot button.shot{background:#fff;color:#000;flex:0 0 72px;height:72px;border-radius:50%;min-width:0;padding:0;box-shadow:0 0 0 4px rgba(255,255,255,.3)}
+.ov .bot button.shot .ms{font-size:32px}
 .wrap{position:relative;width:100%}
 #vid{width:100%;display:block}
 #ovl{position:absolute;left:0;top:0;width:100%;height:100%}
@@ -56,41 +72,44 @@ input[type=file]{display:none}
 </style>
 </head>
 <body>
-<h1><img src="icon-180.png" alt="">晨報小幫手</h1>
+<h1>📄 晨報小幫手</h1>
 
 <div class="card">
+  <h2><span class="ms">description</span>檔案資訊</h2>
   <label>日期（預設為前一日）</label>
   <input type="date" id="date">
   <label>檔名（日期之後的文字）</label>
   <input type="text" id="title" value="B廠值班交接記錄及FMCS系統checklist">
-  <div class="fname" id="fname"></div>
+  <div class="fname"><span class="ms">draft</span><span id="fname"></span></div>
 </div>
 
 <div class="card">
+  <h2><span class="ms">add_a_photo</span>加入頁面</h2>
   <div class="row">
-    <button id="live">🎥 即時掃描（自動對框）</button>
+    <button id="live"><span class="ms">document_scanner</span>即時掃描（自動對框）</button>
   </div>
-  <div class="row" style="margin-top:8px">
-    <label class="btn sec" for="cam" style="margin:0">📷 系統相機</label>
-    <label class="btn sec" for="gal" style="margin:0">🖼 相簿</label>
+  <div class="row" style="margin-top:12px">
+    <label class="btn sec" for="cam" style="margin:0"><span class="ms">photo_camera</span>系統相機</label>
+    <label class="btn sec" for="gal" style="margin:0"><span class="ms">photo_library</span>相簿</label>
   </div>
   <input type="file" id="cam" accept="image/*" capture="environment">
   <input type="file" id="gal" accept="image/*" multiple>
-  <label style="margin-top:12px;color:var(--tx);font-size:15px">色彩模式</label>
-  <select id="enh" style="width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font-size:16px"><option value="color" selected>彩色增強（保留色彩、紙張變白）</option><option value="none">原色（不處理）</option><option value="gray">灰階增強（黑白文件）</option></select>
-  <label style="margin-top:12px;color:var(--tx);font-size:15px">裁邊內縮：<span id="insv">1.5</span>%（紙張邊緣有底色時調大）</label>
-  <input type="range" id="inset" min="0" max="6" step="0.5" value="1.5" style="width:100%">
+  <label style="margin-top:24px">色彩模式</label>
+  <select id="enh"><option value="color" selected>彩色增強（保留色彩、紙張變白）</option><option value="none">原色（不處理）</option><option value="gray">灰階增強（黑白文件）</option></select>
+  <label>裁邊內縮：<span id="insv">1.5</span>%（紙張邊緣有底色時調大）</label>
+  <input type="range" id="inset" min="0" max="6" step="0.5" value="1.5">
 </div>
 
 <div class="card">
+  <h2><span class="ms">auto_stories</span>頁面</h2>
   <div id="pages" class="pages"></div>
-  <div id="empty" class="empty">尚未加入頁面</div>
+  <div id="empty" class="empty"><span class="ms">note_stack</span>尚未加入頁面</div>
 </div>
 
 <div class="row">
-  <button id="prev" class="sec" disabled>👁 預覽</button>
-  <button id="make" disabled>產生並儲存 PDF</button>
-  <button id="clear" class="sec" disabled>全部清除</button>
+  <button id="prev" class="sec" disabled><span class="ms">visibility</span>預覽</button>
+  <button id="make" disabled><span class="ms">picture_as_pdf</span>產生並儲存 PDF</button>
+  <button id="clear" class="sec" disabled><span class="ms">delete_sweep</span>全部清除</button>
 </div>
 <div id="msg"></div>
 <div id="ver"></div>
@@ -99,30 +118,30 @@ input[type=file]{display:none}
   <div class="top" id="camtxt">將 A4 放進畫面，出現綠框並穩住約 1 秒會自動拍照</div>
   <div class="mid"><div class="wrap"><video id="vid" playsinline muted autoplay></video><canvas id="ovl"></canvas><div id="flash"></div></div></div>
   <div class="bot">
-    <button id="autoBtn">自動：開</button>
-    <button class="shot" id="shot">拍照</button>
-    <button id="camDone">完成 (0)</button>
+    <button id="autoBtn"><span class="ms">motion_photos_auto</span><span id="autoT">自動：開</span></button>
+    <button class="shot" id="shot" aria-label="拍照"><span class="ms">photo_camera</span></button>
+    <button id="camDone"><span class="ms">check</span><span id="camN">完成 (0)</span></button>
   </div>
 </div>
 
 <div class="ov" id="pvov">
   <div class="top" id="pvname"></div>
-  <div id="pvbox" style="flex:1;overflow-y:auto;padding:4px 14px"></div>
-  <div class="bot"><button id="pvClose">關閉</button><button id="pvSave" style="background:#0b6bcb;border-color:#0b6bcb">儲存 PDF</button></div>
+  <div id="pvbox" style="flex:1;overflow-y:auto;padding:8px 20px"></div>
+  <div class="bot"><button id="pvClose"><span class="ms">close</span>關閉</button><button id="pvSave" class="pri"><span class="ms">download</span>儲存 PDF</button></div>
 </div>
 
 <div class="ov" id="edov">
   <div class="top">拖曳四個圓點對齊紙張四角</div>
   <div class="mid"><canvas id="edc"></canvas></div>
   <div class="bot">
-    <button id="edAuto">自動偵測</button>
-    <button id="edCancel">取消</button>
-    <button id="edOk" style="background:#0b6bcb;border-color:#0b6bcb">完成</button>
+    <button id="edAuto"><span class="ms">auto_fix_high</span>自動偵測</button>
+    <button id="edCancel"><span class="ms">close</span>取消</button>
+    <button id="edOk" class="pri"><span class="ms">check</span>完成</button>
   </div>
 </div>
 
 <script>
-const APP_VER='v1（2026-10-30）';
+const APP_VER='v2（2026-10-30）';
 (function(){
   var $=function(id){return document.getElementById(id)};
   $('ver').textContent='晨報小幫手 '+APP_VER;
@@ -135,7 +154,7 @@ const APP_VER='v1（2026-10-30）';
     return (d+(t?' '+t:'')).replace(/[\\/:*?"<>|]/g,'_')+'.pdf';
   }
   function upd(){
-    $('fname').textContent='檔名：'+fileName();
+    $('fname').textContent=fileName();
     $('empty').style.display=pages.length?'none':'block';
     $('prev').disabled=$('make').disabled=$('clear').disabled=!pages.length;
   }
@@ -346,13 +365,13 @@ const APP_VER='v1（2026-10-30）';
       var d=document.createElement('div');d.className='pg';
       var im=document.createElement('img');im.src=p.out.toDataURL('image/jpeg',.4);
       var bar=document.createElement('div');bar.className='bar';
-      var sp=document.createElement('span');sp.textContent='第 '+(i+1)+' 頁';
+      var sp=document.createElement('span');sp.className='n';sp.textContent='第 '+(i+1)+' 頁';
       bar.appendChild(sp);
-      function b(t,f){var x=document.createElement('button');x.textContent=t;x.onclick=f;bar.appendChild(x)}
-      b('✎',function(){openEd(p)});
-      b('⟳',function(){p.rot=(p.rot+1)%4;build(p);render()});
-      b('←',function(){if(i>0){pages.splice(i-1,0,pages.splice(i,1)[0]);render()}});
-      b('✕',function(){pages.splice(i,1);render()});
+      function b(ic,tt,f){var x=document.createElement('button');x.innerHTML='<span class="ms">'+ic+'</span>';x.title=x.ariaLabel=tt;x.onclick=f;bar.appendChild(x)}
+      b('crop_free','調整四角',function(){openEd(p)});
+      b('rotate_right','旋轉',function(){p.rot=(p.rot+1)%4;build(p);render()});
+      b('arrow_back','往前移',function(){if(i>0){pages.splice(i-1,0,pages.splice(i,1)[0]);render()}});
+      b('close','刪除',function(){pages.splice(i,1);render()});
       d.appendChild(im);d.appendChild(bar);box.appendChild(d);
     });
     upd();
@@ -407,7 +426,7 @@ const APP_VER='v1（2026-10-30）';
       stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
     }catch(e){$('msg').textContent='無法開啟相機（'+(e.name||'錯誤')+'），請改用「系統相機」按鈕（同樣會自動裁切）';return}
     vid.srcObject=stream;try{await vid.play()}catch(e){}
-    live={q:null,last:null,stable:0,cool:Date.now()+800,n:0};$('camDone').textContent='完成 (0)';
+    live={q:null,last:null,stable:0,cool:Date.now()+800,n:0};$('camN').textContent='完成 (0)';
     $('camov').classList.add('on');timer=setInterval(tick,180);
   };
   function closeCam(){
@@ -415,7 +434,7 @@ const APP_VER='v1（2026-10-30）';
     $('camov').classList.remove('on');
   }
   $('camDone').onclick=function(){closeCam();if(live.n)$('msg').textContent='已加入 '+live.n+' 頁'};
-  $('autoBtn').onclick=function(){auto=!auto;$('autoBtn').textContent='自動：'+(auto?'開':'關');live.stable=0};
+  $('autoBtn').onclick=function(){auto=!auto;$('autoT').textContent='自動：'+(auto?'開':'關');live.stable=0};
   function tick(){
     if(!vid.videoWidth)return;
     var q=detect(vid,vid.videoWidth,vid.videoHeight);
@@ -443,7 +462,7 @@ const APP_VER='v1（2026-10-30）';
     c.width=Math.round(vw*s);c.height=Math.round(vh*s);c.getContext('2d').drawImage(vid,0,0,c.width,c.height);
     var q=live.q||detect(c,c.width,c.height)||DEF;
     addPage(c,q);live.n++;live.stable=0;live.cool=Date.now()+2200;
-    $('camDone').textContent='完成 ('+live.n+')';
+    $('camN').textContent='完成 ('+live.n+')';
     var f=$('flash');f.style.opacity=.8;setTimeout(function(){f.style.opacity=0},120);
     if(navigator.vibrate)navigator.vibrate(40);
   }
