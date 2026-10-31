@@ -45,7 +45,7 @@ table{min-width:0!important;width:auto!important}
 .tabbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}.tab{white-space:nowrap;background:#e2e8f0;color:#0f172a;min-width:56px;flex:0 0 auto}.tab.active{background:#0f172a;color:#fff;font-weight:700}.tab.add{background:#dbeafe;color:#1e3a8a}
 .gbox{background:#eff6ff;border:2px solid #3b82f6;border-radius:14px;padding:8px 10px;margin:0}.gbox #gName{font-size:18px;font-weight:700;line-height:1.25}.gbox #gVal{font-size:22px;text-align:center}
 #gHist:not(:empty)::before{content:'　｜　'}
-.gbox.gmin .gx,.gbox.gmin #gSpeed,.gbox.gmin #gRb,.gbox.gmin #gRbRate{display:none!important}   /* 收合時連速度、複讀、語速鍵一起藏起來 */
+.gbox.gmin #gHeard,.gbox.gmin #gSpeed,.gbox.gmin #gRb,.gbox.gmin #gRbRate{display:none!important}   /* 收合：只藏速度、複讀、語速鍵和辨識文字；標準／上次抄表、上一項保留 */
 .gbtns{display:flex;gap:6px;margin-top:6px}.gbtns button{flex:1;min-width:0;padding:8px 4px;min-height:42px}.gbtns .voice{min-width:0}
 #voiceCard.pinned{position:sticky;top:calc(var(--hh,70px) + 6px);z-index:9;max-height:calc(100vh - var(--hh,70px) - 16px);max-height:calc(100dvh - var(--hh,70px) - 16px);overflow:auto;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 #voiceCard .vbtns{margin-top:6px!important;gap:6px}#voiceCard .vbtns button{flex:1;min-width:0;padding:8px 4px;min-height:40px;font-size:14px}#voiceCard .vbtns .status{flex:0 0 100%;padding:5px 9px}
@@ -2067,7 +2067,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v65（2026-10-31）';
+const APP_VER='v66（2026-10-31）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -2368,7 +2368,7 @@ const HELP=[
 <li>沒有麥克風或聽不清楚時，可以直接在報數框輸入讀值，按「確定 ▶」。</li>
 <li>報數框左下的紅色鍵：聆聽中顯示「<b>⏸ 暫停</b>」，按一下暫停聆聽（例如要跟人說話時）；再按「<b>▶ 繼續</b>」恢復。暫停時按更正、跳過或手動輸入，都會保持暫停。</li>
 <li><b>🎧 耳機按鍵</b>（⋯ 更多功能）：按一下＝開始逐項報數／暫停或繼續聆聽；按兩下＝跳過；按三下＝更正。暫停後再按一下繼續時，會先「嗶」一聲，約 1 秒後才開始聽。iPhone 上耳機按鍵有時會和語音辨識衝突：發生時 App 會自動關掉耳機按鍵並恢復語音，不用重開 App。</li>
-<li>報數框的「<b>收合</b>」：把標準、上一項，以及速度、複讀、語速鍵收起來，只留項目名稱、讀值和操作鍵；按「展開」恢復。</li>
+<li>報數框的「<b>收合</b>」：把速度、複讀、語速鍵和「聽到：…」那行收起來；標準／上次抄表、上一項仍會顯示。按「展開」恢復。</li>
 <li><b>🔊 複讀</b>：辨識完會逐字唸出數值，唸完才跳下一項（語音區的開關）。</li>
 <li><b>🗣 語速</b>（語音區和報數框都有）：複讀唸數字的快慢，分「慢／稍慢／正常／稍快／快」，按一下換一段，會唸一次讓你聽，並記住設定。</li>
 <li>語音區只有在逐項報數時才會固定在畫面上方，結束後恢復正常捲動。</li>
