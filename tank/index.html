@@ -20,28 +20,29 @@
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111418;--card:#1b2027;--tx:#eceff3;--mut:#98a2b3;--bd:#363d47;--ac:#6ea0ff;--acx:#0b1220}}
 :root[data-theme="dark"]{--bg:#111418;--card:#1b2027;--tx:#eceff3;--mut:#98a2b3;--bd:#363d47;--ac:#6ea0ff;--acx:#0b1220}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 -apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;padding:14px;max-width:640px;margin-inline:auto}
-h1{font-size:20px;margin:6px 0 12px;display:flex;align-items:center;gap:8px}
-h1 img{width:32px;height:32px;border-radius:8px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}
-label{display:block;font-size:13px;color:var(--mut);margin:8px 0 3px}
-input[type=text],input[type=datetime-local]{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
-select{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
-.vrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.vrow input{flex:1 1 100%;min-width:0}
-button.sm{flex:1;width:auto;margin:0;padding:10px 12px;font-size:15px;white-space:nowrap}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.slot{border:1px dashed var(--bd);border-radius:10px;padding:6px;background:var(--bg)}
-.slot input[type=text]{font-size:13px;padding:6px;margin-bottom:6px}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 -apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;padding:8px 10px;max-width:640px;margin-inline:auto}
+h1{font-size:18px;margin:2px 0 6px;display:flex;align-items:center;gap:6px}
+h1 img{width:26px;height:26px;border-radius:6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px;margin-bottom:6px}
+label{display:block;font-size:13px;color:var(--mut);margin:4px 0 2px}
+input[type=text],input[type=datetime-local]{width:100%;font:inherit;padding:7px 8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+select{width:100%;font:inherit;padding:7px 8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+.vrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.vrow input{flex:1 1 100%;min-width:0}
+button.sm{flex:1;width:auto;margin:0;padding:7px 10px;font-size:15px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.grid>*{min-width:0}
+.dtv{grid-template-columns:1.4fr 1fr}#dt{min-width:0;font-size:15px;-webkit-appearance:none;appearance:none;min-height:38px}
+.slot{border:1px dashed var(--bd);border-radius:8px;padding:4px;background:var(--bg)}
+.slot input[type=text]{font-size:13px;padding:4px 6px;margin-bottom:4px}
 .pv{aspect-ratio:4/3;border-radius:8px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px;overflow:hidden;position:relative;cursor:pointer}
 .pv img{width:100%;height:100%;object-fit:cover}
-.pv.tall{aspect-ratio:3/4;max-width:200px;margin:auto}
+.pv.tall{aspect-ratio:3/4;max-width:140px;margin:auto;border:1px dashed var(--bd);background:var(--bg)}
 .pv.tall img{object-fit:contain}
 .x{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:50%;width:24px;height:24px;font-size:14px}
-button.main,button.sub{width:100%;font:inherit;font-weight:600;padding:13px;border-radius:10px;border:1px solid var(--ac);margin-top:8px}
+button.main,button.sub{width:100%;font:inherit;font-weight:600;padding:9px;border-radius:8px;border:1px solid var(--ac);margin-top:6px}
 button.main{background:var(--ac);color:var(--acx)}
 button.sub{background:transparent;color:var(--ac)}
-.q{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:14px}.q span{flex:1;min-width:0}.q button{border:0;background:transparent;color:var(--mut);font-size:18px}
-#msg{font-size:14px;color:var(--mut);min-height:22px;margin-top:8px;text-align:center}
+.q{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:5px 8px;margin-top:6px;font-size:14px}.q span{flex:1;min-width:0}.q button{border:0;background:transparent;color:var(--mut);font-size:18px}
+#msg{font-size:14px;color:var(--mut);min-height:20px;margin-top:4px;text-align:center}
 </style>
 </head>
 <body>
@@ -52,17 +53,15 @@ button.sub{background:transparent;color:var(--ac)}
   <select id="tpl"></select>
   <label>槽車項目</label>
   <input type="text" id="item" value="化學品入料 (IPA)">
-  <div class="grid">
+  <div class="grid dtv">
     <div><label>日期時間</label><input type="datetime-local" id="dt"></div>
     <div><label>廠商</label><select id="vendor"></select></div>
   </div>
   <div class="vrow"><input type="text" id="newV" placeholder="新增廠商名稱"><button class="sub sm" id="addV">新增</button><button class="sub sm" id="delV">刪除所選</button></div>
 </div>
 
-<div class="card">
-  <button class="sub" id="multi" style="margin-top:0">一次選多張（依序填入 1~6，第 7 張為 Check List）</button>
-  <input type="file" id="multiIn" accept="image/*" multiple hidden>
-</div>
+<button class="sub" id="multi" style="margin:0 0 6px">一次選多張（依序 1~6，第 7 張 Check List）</button>
+<input type="file" id="multiIn" accept="image/*" multiple hidden>
 
 <div class="card">
   <div class="grid" id="slots"></div>
@@ -77,13 +76,13 @@ button.sub{background:transparent;color:var(--ac)}
 <button class="sub" id="addMore">＋ 加入此份，繼續新增下一份</button>
 <div id="queue"></div>
 <button class="sub" id="prev">預覽（A4 列印效果）</button>
-<select id="fmt" style="margin-top:8px"><option value="docx">輸出格式：Word (.docx)</option><option value="pdf">輸出格式：PDF</option></select>
+<select id="fmt" style="margin-top:6px"><option value="docx">輸出格式：Word (.docx)</option><option value="pdf">輸出格式：PDF</option></select>
 <button class="main" id="go">產生檔案</button>
 <button class="sub" id="reset">清除全部</button>
 <div id="msg"></div>
 
 <script>
-const APP_VER='v1（2026-10-29）';
+const APP_VER='v2（2026-10-31）';
 const STEPS=["車輛熄火，鑰匙拔除","車輛前後放置三角錐","輪擋放置","槽車接地確認","人員防護具","銜接管路種類確認"];
 const photos=new Array(6).fill(null); let checklist=null;
 const $=id=>document.getElementById(id);
