@@ -230,8 +230,26 @@ th,td{padding:8px 5px}td input,td select{padding:9px 8px}
   header{padding-left:18px;padding-right:18px}.actions{gap:10px}
 }
 
+
+/* ===== 緊湊間距（留白縮小） ===== */
+header{padding:calc(12px + env(safe-area-inset-top)) 16px 10px}header h1{font-size:19px;margin:0 0 3px}header h1 .ms{font-size:23px;margin-right:8px}header p{font-size:12px}
+main{padding-top:10px}
+.card{padding:14px;margin-bottom:10px;border-radius:16px}
+.row{gap:8px}label{margin-bottom:5px}
+button{min-height:42px;padding:8px 12px;border-radius:12px}
+input,textarea,select{padding:9px 12px;border-radius:10px}
+.status{padding:8px 12px;border-radius:12px}.notice{padding:12px;border-radius:12px}
+.tabbar{gap:6px;padding-bottom:4px}.tab{min-height:36px;padding:5px 14px}
+.colctl{margin:6px 0}.colctl summary{padding:6px 0}
+.chips{gap:6px;margin:6px 0}.chip{min-height:32px;padding:3px 11px}
+.gbox{padding:12px;border-radius:14px}.gbox #gName{font-size:18px}
+.gbtns{gap:6px;margin-top:8px}.gbtns button{min-height:44px}
+#guide .row:first-child>span button{min-height:32px;padding:4px 10px;font-size:13px}
+.history-item{padding:10px 0}
+#voiceCard .vbtns{margin-top:4px!important}
+@media(max-width:600px){.card{padding:12px calc(var(--px,2px) + 10px);border-radius:16px}.card:has(.tablewrap){padding-left:calc(var(--px,2px) + 4px);padding-right:calc(var(--px,2px) + 4px)}header{padding-left:14px;padding-right:14px}.actions{gap:8px}}
 /* ===== 白底主題（頁首右上角切換，存在這台裝置） ===== */
-#themeBtn{position:absolute;right:16px;top:calc(14px + env(safe-area-inset-top));min-height:38px;padding:6px 12px;font-size:13px;border-radius:999px;z-index:2}
+#themeBtn{position:absolute;right:14px;top:calc(10px + env(safe-area-inset-top));min-height:34px;padding:4px 11px;font-size:13px;border-radius:999px;z-index:2}
 header{color:var(--text)}header h1{padding-right:96px}
 #numBar{color:var(--text)}#numBar #nbDrag{color:var(--text)}
 html[data-theme="light"]{--bg:#F4F4F5;--surface:#FFFFFF;--surface-2:#F4F4F5;--surface-3:#E4E4E7;--border:rgba(0,0,0,.07);--border-2:rgba(0,0,0,.12);
@@ -1032,6 +1050,11 @@ $('historyBtn').addEventListener('click',showHistory);
 $('closeHistoryBtn').addEventListener('click',()=>$('historyCard').classList.add('hidden'));
 
 let recognition=null, listening=false;
+function rebuildRecognition(){   // 換一個全新的語音辨識（iPhone 上辨識壞掉時，原本要重開 App 才會好）
+  const old=recognition;
+  if(old){['onstart','onresult','onerror','onend','onaudiostart','onsoundstart','onspeechstart','onspeechend','onnomatch'].forEach(k=>{try{old[k]=null;}catch(e){}});try{old.abort();}catch(e){}}
+  recognition=null;listening=false;setupSpeech();vlog('已換新的語音辨識');
+}
 function setupSpeech(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){$('voiceStatus').textContent='此瀏覽器不支援語音辨識：逐項報數時請直接輸入讀值。';return;}
@@ -1104,9 +1127,17 @@ function guidedEnd(){
 }
 function guidedError(e){
   listening=false;
-  if(guided.resumeAt&&Date.now()-guided.resumeAt<4000&&!guided.retried&&e.error!=='no-speech'){   // 剛從耳機鍵繼續就出錯：多半是音訊還在切換，等一下重試一次
+  const hard=e.error!=='no-speech'&&e.error!=='aborted';
+  if(hard&&guided.resumeAt&&Date.now()-guided.resumeAt<4000&&!guided.retried){   // 剛繼續就出錯：多半是音訊還在切換，換新的辨識再試一次
     guided.retried=true;clearTimeout(guided.rt);
-    guided.rt=setTimeout(()=>{if(guided.on&&!guided.paused){guided.noMic=false;listenGuide();}},800);
+    guided.rt=setTimeout(()=>{if(guided.on&&!guided.paused){guided.noMic=false;rebuildRecognition();listenGuide();}},800);
+    return;
+  }
+  if(hard&&ear.on){   // 耳機按鍵和語音辨識衝突：自動關掉耳機按鍵，換新的辨識，不用重開 App
+    earOff();clearTimeout(guided.rt);
+    guided.rt=setTimeout(()=>{if(guided.on&&!guided.paused){guided.noMic=false;rebuildRecognition();listenGuide();}},800);
+    $('gHeard').textContent='耳機按鍵讓語音辨識出錯，已自動關閉耳機按鍵並恢復語音（不用重開 App）';
+    $('message').textContent='耳機按鍵已自動關閉：它和 iPhone 的語音辨識衝突。';
     return;
   }
   if(e.error==='not-allowed'||e.error==='service-not-allowed'){guided.noMic=true;applyMicBtn();$('gHeard').textContent='🎙️ '+errText(e.error)+' 可直接輸入讀值後按「確定」。';}
@@ -1219,6 +1250,7 @@ function pauseGuide(){
 }
 function resumeGuide(){
   guided.paused=false;guided.noMic=false;guided.resumeAt=Date.now();guided.retried=false;
+  if(ear.on)rebuildRecognition();   // 耳機模式：換新的辨識，避免沿用壞掉的
   $('gHeard').textContent='請說數字…';applyMicBtn();listenGuide();
 }
 $('gMic').addEventListener('click',()=>{if(guided.paused||guided.noMic)resumeGuide();else pauseGuide();});
@@ -1567,7 +1599,8 @@ function silentWavURL(){
 }
 function keepEar(){
   if(!ear.on||!ear.audio)return;
-  if(listening||(guided.on&&!guided.paused))return;
+  if(listening)return;
+  if(guided.on){try{navigator.mediaSession.playbackState='paused';}catch(e){}return;}   // 報數中（包括暫停時）不播放無聲音訊：iPhone 在報數途中開始播放，語音辨識就可能壞掉
   if(ear.audio.paused){const p=ear.audio.play();if(p&&p.catch)p.catch(()=>{});}
   try{navigator.mediaSession.playbackState='playing';}catch(e){}
 }
@@ -1585,7 +1618,7 @@ function earAction(a){
         beep(880,120);
         guided.resumeAt=Date.now();guided.retried=false;
         clearTimeout(guided.rt);
-        guided.rt=setTimeout(()=>{if(guided.on&&!guided.paused)listenGuide();},700);   // 等嗶聲播完、音訊切換好再開始聽
+        guided.rt=setTimeout(()=>{if(guided.on&&!guided.paused){rebuildRecognition();listenGuide();}},900);   // 等嗶聲播完、音訊切換好，換新的辨識再開始聽
         return;
       }
     }else{startGuide();beep(880,120);}
@@ -1855,6 +1888,7 @@ function voiceReset(){
   try{speechSynthesis.cancel();}catch(e){}
   if(actx){closeCtx(actx);actx=null;}
   if(ear.on)earOff();
+  rebuildRecognition();
   guided.noMic=false;guided.paused=false;guided.busy=false;guided.ns=0;lastErr='';voiceLog.length=0;
   $('voiceStatus').textContent='已重設語音（耳機按鍵已關閉）。請再按一次「逐項報數」。';
   $('message').textContent='已重設語音。若仍聽不到聲音，請關閉「🔊 複讀」，並確認 Safari 的麥克風權限。';
@@ -2033,7 +2067,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v63（2026-10-29）';
+const APP_VER='v64（2026-10-31）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
@@ -2333,7 +2367,7 @@ const HELP=[
 <li>數字很長時，iPhone 有時會當成電話號碼，自動加上「-」或空格（例如 102-326），App 會自動合併成 102326。</li>
 <li>沒有麥克風或聽不清楚時，可以直接在報數框輸入讀值，按「確定 ▶」。</li>
 <li>報數框左下的紅色鍵：聆聽中顯示「<b>⏸ 暫停</b>」，按一下暫停聆聽（例如要跟人說話時）；再按「<b>▶ 繼續</b>」恢復。暫停時按更正、跳過或手動輸入，都會保持暫停。</li>
-<li><b>🎧 耳機按鍵</b>（⋯ 更多功能）：按一下＝開始逐項報數／暫停或繼續聆聽；按兩下＝跳過；按三下＝更正。暫停後再按一下繼續時，會先「嗶」一聲，約 0.7 秒後才開始聽。</li>
+<li><b>🎧 耳機按鍵</b>（⋯ 更多功能）：按一下＝開始逐項報數／暫停或繼續聆聽；按兩下＝跳過；按三下＝更正。暫停後再按一下繼續時，會先「嗶」一聲，約 1 秒後才開始聽。iPhone 上耳機按鍵有時會和語音辨識衝突：發生時 App 會自動關掉耳機按鍵並恢復語音，不用重開 App。</li>
 <li><b>🔊 複讀</b>：辨識完會逐字唸出數值，唸完才跳下一項（語音區的開關）。</li>
 <li><b>🗣 語速</b>（語音區和報數框都有）：複讀唸數字的快慢，分「慢／稍慢／正常／稍快／快」，按一下換一段，會唸一次讓你聽，並記住設定。</li>
 <li>語音區只有在逐項報數時才會固定在畫面上方，結束後恢復正常捲動。</li>
