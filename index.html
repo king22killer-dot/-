@@ -273,6 +273,9 @@ html[data-theme="light"] #sheetBody{border:1px solid var(--border-2)}
 <script>(function(){   // 圖示字型「真的下載完成」才顯示圖示；沒網路時只顯示文字，不會出現 save、mic 這類英文字
   var h=document.documentElement,chk=function(){try{var ok=false;document.fonts.forEach(function(f){if(f.family.replace(/["']/g,'')==='Material Symbols Outlined'&&f.status==='loaded')ok=true;});if(ok)h.classList.add('ic');}catch(e){}};
   try{if(document.fonts){document.fonts.load('24px "Material Symbols Outlined"','save').then(chk,chk);document.fonts.ready.then(chk);document.fonts.addEventListener&&document.fonts.addEventListener('loadingdone',chk);}}catch(e){}
+  // iPhone 上圖示的樣式表常比這段程式晚載入：每 0.5 秒再檢查並要求載入，最多 30 秒
+  var n=0,t=setInterval(function(){n++;if(h.classList.contains('ic')||n>60){clearInterval(t);return;}try{document.fonts.load('24px "Material Symbols Outlined"','save').then(chk,chk);}catch(e){}chk();},500);
+  window.addEventListener('load',chk);
 })();</script>
 <script src="firebase-config.js"></script>
 <script>
@@ -1133,11 +1136,11 @@ function guidedError(e){
     guided.rt=setTimeout(()=>{if(guided.on&&!guided.paused){guided.noMic=false;rebuildRecognition();listenGuide();}},800);
     return;
   }
-  if(hard&&ear.on){   // 耳機按鍵和語音辨識衝突：自動關掉耳機按鍵，換新的辨識，不用重開 App
-    earOff();clearTimeout(guided.rt);
+  if(ear.on&&/^(audio-capture|not-allowed|service-not-allowed)$/.test(e.error)){   // 耳機按鍵和語音辨識衝突（麥克風被占用／被拒）：自動關掉耳機按鍵，換新的辨識，不用重開 App
+    earOff('語音辨識錯誤 '+e.error);clearTimeout(guided.rt);
     guided.rt=setTimeout(()=>{if(guided.on&&!guided.paused){guided.noMic=false;rebuildRecognition();listenGuide();}},800);
     $('gHeard').textContent='耳機按鍵讓語音辨識出錯，已自動關閉耳機按鍵並恢復語音（不用重開 App）';
-    $('message').textContent='耳機按鍵已自動關閉：它和 iPhone 的語音辨識衝突。';
+    $('message').textContent='耳機按鍵已自動關閉：它和 iPhone 的語音辨識衝突（錯誤 '+e.error+'）。';
     return;
   }
   if(e.error==='not-allowed'||e.error==='service-not-allowed'){guided.noMic=true;applyMicBtn();$('gHeard').textContent='🎙️ '+errText(e.error)+' 可直接輸入讀值後按「確定」。';}
@@ -1629,10 +1632,13 @@ function earAction(a){
   }
   keepEar();
 }
-function earOff(){
-  ear.on=false;
+function earOff(reason){
+  ear.on=false;vlog('耳機按鍵關閉'+(reason?'：'+reason:''));
   try{if(ear.audio)ear.audio.pause();}catch(e){}
-  ['play','pause','nexttrack','previoustrack','seekforward','seekbackward'].forEach(a=>{try{navigator.mediaSession.setActionHandler(a,null);}catch(e){}});
+  ['play','pause','nexttrack','previoustrack','seekforward','seekbackward'].forEach(a=>{try{
+    // 自動關閉時，耳機鍵改成提示（不交回 iPhone，否則 iPhone 會去播放無聲音訊、動態島出現播放器）
+    navigator.mediaSession.setActionHandler(a,reason?()=>{vlog('耳機鍵：收到 '+a+'（耳機按鍵已自動關閉）');beep(300,200);$('message').textContent='耳機按鍵已自動關閉（和語音辨識衝突）。要再用請到「⋯ 更多功能」重新開啟。';try{navigator.mediaSession.playbackState='paused';}catch(e){}}:null);
+  }catch(e){}});
   try{navigator.mediaSession.playbackState='none';}catch(e){}
   $('earBtn').textContent='耳機按鍵：關';$('earBtn').classList.remove('on');
 }
@@ -1642,17 +1648,17 @@ function earOn(){
   beep(1,10);
   const p=ear.audio.play();
   const ready=()=>{
-    ear.on=true;
+    ear.on=true;vlog('耳機按鍵開啟');
     try{navigator.mediaSession.metadata=new MediaMetadata({title:'夜班小幫手 耳機控制中',artist:'播放/暫停＝開始/停止聆聽 · 下一首＝跳過 · 上一首＝更正'});}catch(e){}
     const map={play:'toggle',pause:'toggle',nexttrack:'next',previoustrack:'prev',seekforward:'next',seekbackward:'prev'};
-    Object.keys(map).forEach(a=>{try{navigator.mediaSession.setActionHandler(a,()=>earAction(map[a]));}catch(e){}});
+    Object.keys(map).forEach(a=>{try{navigator.mediaSession.setActionHandler(a,()=>{vlog('耳機鍵：收到 '+a+'（報數'+(guided.on?(guided.paused?'暫停中':'中'):'未開始')+'）');earAction(map[a]);});}catch(e){}});
     keepEar();
     $('earBtn').textContent='耳機按鍵：開';$('earBtn').classList.add('on');
     $('message').textContent='耳機按鍵已啟用：按一下＝開始逐項報數／暫停或繼續聆聽；按兩下＝跳過；按三下＝更正。請保持畫面開啟。';
   };
   if(p&&p.then)p.then(ready).catch(()=>{$('message').textContent='無法啟動耳機控制（瀏覽器擋下了背景音訊）。請再按一次，或改用獨立網站版。';});else ready();
 }
-$('earBtn').addEventListener('click',()=>{if(ear.on)earOff();else earOn();});
+$('earBtn').addEventListener('click',()=>{if(ear.on)earOff();else earOn();});   // 手動關閉：耳機鍵交回 iPhone
 let rb={on:lsGet('wasteInspectionReadback',false)===true};
 const RBRATE=[{n:'慢',r:0.7},{n:'稍慢',r:0.85},{n:'正常',r:1},{n:'稍快',r:1.2},{n:'快',r:1.4}];   // 複讀語速（和報數速度分開）
 let rbRate=Math.min(RBRATE.length-1,Math.max(0,Number(lsGet('wasteInspectionReadbackRate',2))));if(!Number.isFinite(rbRate))rbRate=2;
@@ -1817,7 +1823,7 @@ if(window.visualViewport){const nbf=()=>nbSettle(1200);window.visualViewport.add
 window.addEventListener('scroll',()=>nbSettle(800),{passive:true});
 window.addEventListener('orientationchange',()=>nbSettle(1500));
 let lastErr='',voiceLog=[];
-function vlog(m){voiceLog.push(new Date().toLocaleTimeString('zh-TW',{hour12:false})+' '+m);if(voiceLog.length>14)voiceLog.shift();}
+function vlog(m){voiceLog.push(new Date().toLocaleTimeString('zh-TW',{hour12:false})+' '+m);if(voiceLog.length>30)voiceLog.shift();}
 function errText(c){
   return ({
     'no-speech':'沒有聽到聲音（請確認麥克風／耳機有收音；也可先關閉 🎧 耳機按鍵、🔊 複讀再試）',
@@ -1856,6 +1862,7 @@ async function renderDiag(){
     '執行環境：'+(framed?'內嵌框架（claude.ai 連結內麥克風常被封鎖，請改用獨立網站版）':'獨立頁面'),
     '麥克風權限：'+perm,
     '🎧 耳機按鍵：'+(ear.on?'開（會占用音訊，異常時請關閉）':'關'),
+    '圖示字型：'+(document.documentElement.classList.contains('ic')?'已載入':'未載入（按鍵只顯示文字）'),
     '🔊 複讀：'+(rb.on?'開（異常時請關閉）':'關'),
     '最後錯誤：'+(lastErr?lastErr+'｜'+errText(lastErr):'無'),
     '近期事件：'
@@ -2067,7 +2074,7 @@ function timingText(){
   if(m.rec!=null)a.push('他人紀錄延遲約 '+Math.round(m.rec/1000)+' 秒');
   return a.length?'⏱ '+a.join('｜'):'';
 }
-const APP_VER='v66（2026-10-31）';
+const APP_VER='v67（2026-10-31）';
 function showCfgInfo(d){
   const el=$('cloudCfgInfo');if(!el||!d)return;
   const t=Number(d.rev);
