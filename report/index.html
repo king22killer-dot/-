@@ -88,8 +88,11 @@ input[type=range]{width:100%;accent-color:var(--ac)}
 
 <div class="card">
   <h2><span class="ms">add_a_photo</span>加入頁面</h2>
+  <label class="btn" for="scan" style="margin:0;display:flex;width:100%"><span class="ms">upload_file</span>匯入 iPhone 掃描檔（PDF／圖片）</label>
+  <input type="file" id="scan" accept="application/pdf,image/*" multiple>
+  <div style="font-size:13px;color:var(--mut);margin:8px 2px 12px;line-height:1.5">先在「檔案」App 右上角「⋯」→「掃描文件」用 iPhone 內建掃描，存好後按上面按鈕選取。已裁切好的掃描檔不會再裁切。</div>
   <div class="row">
-    <button id="live"><span class="ms">document_scanner</span>即時掃描（自動對框）</button>
+    <button id="live" class="sec"><span class="ms">document_scanner</span>即時掃描（自動對框）</button>
   </div>
   <div class="row" style="margin-top:8px">
     <label class="btn sec" for="cam" style="margin:0"><span class="ms">photo_camera</span>系統相機</label>
@@ -162,7 +165,7 @@ input[type=range]{width:100%;accent-color:var(--ac)}
 </div>
 
 <script>
-const APP_VER='v6（2026-11-08）';
+const APP_VER='v7（2026-11-08）';
 if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbols Rounded'",'check').then(function(f){if(f.length)document.documentElement.classList.add('msok')}).catch(function(){});
 (function(){
   var $=function(id){return document.getElementById(id)};
@@ -375,7 +378,13 @@ if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbo
     q.forEach(function(v){cx+=v[0]/4;cy+=v[1]/4});
     return q.map(function(v){return [cx+(v[0]-cx)*s,cy+(v[1]-cy)*s]})}
   function build(p){
-    var o=warp(p.src,shrink(p.quad));
+    var o;
+    if(p.raw){   // iPhone 內建掃描已裁切、增強過：只縮放，不再裁切／增強
+      var k=Math.min(1,1754/Math.max(p.src.width,p.src.height));o=document.createElement('canvas');
+      o.width=Math.round(p.src.width*k);o.height=Math.round(p.src.height*k);o.getContext('2d').drawImage(p.src,0,0,o.width,o.height);
+      for(var r=0;r<p.rot;r++)o=rotate(o);p.out=o;return;
+    }
+    o=warp(p.src,shrink(p.quad));
     var em=$('enh').value;if(em==='gray')enhance(o);else if(em==='color')enhanceColor(o);
     for(var i=0;i<p.rot;i++)o=rotate(o);
     p.out=o;
@@ -439,6 +448,36 @@ if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbo
     $('msg').textContent=miss?'有 '+miss+' 頁未偵測到紙張邊緣，可點 ✎ 手動調整四角':'';if(lastMiss)openEd(pages[pages.length-1]);
   }
   $('cam').onchange=function(e){addFiles(e.target.files);e.target.value=''};
+
+  /* ---------- 匯入 iPhone 內建掃描的 PDF／圖片（不偵測邊緣） ---------- */
+  var PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+  function loadPdfJs(){
+    if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);
+    return new Promise(function(res,rej){var sc=document.createElement('script');sc.src=PDFJS+'pdf.min.js';
+      sc.onload=function(){pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS+'pdf.worker.min.js';res(pdfjsLib)};
+      sc.onerror=function(){rej(new Error('無法載入 PDF 元件，請確認網路'))};document.head.appendChild(sc)});
+  }
+  function addRaw(c){var p={src:c,quad:[[0,0],[1,0],[1,1],[0,1]],rot:0,raw:true};build(p);pages.push(p)}
+  $('scan').onchange=async function(e){
+    var files=[].slice.call(e.target.files);e.target.value='';if(!files.length)return;
+    try{
+      for(var i=0;i<files.length;i++){
+        var f=files[i];
+        if(f.type==='application/pdf'||/\.pdf$/i.test(f.name)){
+          $('msg').textContent='讀取 PDF 中…';
+          var lib=await loadPdfJs(),pdf=await lib.getDocument({data:await f.arrayBuffer()}).promise;
+          for(var n=1;n<=pdf.numPages;n++){
+            $('msg').textContent='讀取 PDF 第 '+n+' / '+pdf.numPages+' 頁…';
+            var pg=await pdf.getPage(n),v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:Math.min(4,1754/Math.max(v0.width,v0.height))});
+            var c=document.createElement('canvas');c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+            var cx=c.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,c.width,c.height);
+            await pg.render({canvasContext:cx,viewport:vp}).promise;addRaw(c);
+          }
+        }else addRaw(await loadFile(f));
+      }
+      render();$('msg').textContent='✅ 已匯入，共 '+pages.length+' 頁';
+    }catch(err){render();$('msg').textContent='匯入失敗：'+((err&&err.message)||err)}
+  };
   $('gal').onchange=function(e){addFiles(e.target.files);e.target.value=''};
 
   /* ---------- 工程事項拍照：檔名「今天日期 工程事項」，跟 PDF 一起寄出 ---------- */
@@ -559,7 +598,7 @@ if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbo
   edc.onpointerup=function(){ed.drag=-1};
   $('edAuto').onclick=function(){var q=detect(ed.p.src,ed.p.src.width,ed.p.src.height,true);if(q){ed.q=q;drawEd()}};
   $('edCancel').onclick=function(){$('edov').classList.remove('on')};
-  $('edOk').onclick=function(){ed.p.quad=ed.q;build(ed.p);$('edov').classList.remove('on');render()};
+  $('edOk').onclick=function(){ed.p.quad=ed.q;ed.p.raw=false;build(ed.p);$('edov').classList.remove('on');render()};
 
   /* ---------- 輸出 PDF＋工程事項照片（iPhone 用分享面板一次寄出，其他瀏覽器逐一下載） ---------- */
   $('make').onclick=async function(){
