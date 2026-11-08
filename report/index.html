@@ -115,6 +115,13 @@ input[type=range]{width:100%;accent-color:var(--ac)}
   <button id="clear" class="sec" disabled><span class="ms">delete_sweep</span>全部清除</button>
 </div>
 <div id="msg"></div>
+<div class="card" style="margin-top:12px">
+  <h2><span class="ms">engineering</span>工程事項</h2>
+  <label class="btn sec" for="eng" style="margin:0"><span class="ms">add_a_photo</span>工程事項拍照</label>
+  <div style="font-size:13px;color:var(--mut);margin-top:8px">拍下的照片另存成 JPG，不會加入上面的 PDF。</div>
+  <input type="file" id="eng" accept="image/*" capture="environment">
+  <div class="fname"><span class="ms">image</span><span id="engName"></span></div>
+</div>
 <div id="ver"></div>
 
 <div class="ov" id="camov">
@@ -133,6 +140,16 @@ input[type=range]{width:100%;accent-color:var(--ac)}
   <div class="bot"><button id="pvClose"><span class="ms">close</span>關閉</button><button id="pvSave" class="pri"><span class="ms">download</span>儲存 PDF</button></div>
 </div>
 
+<div class="ov" id="engov">
+  <div class="top" id="engTop"></div>
+  <div class="mid"><img id="engImg" alt="" style="max-width:100%;max-height:100%;object-fit:contain"></div>
+  <div class="bot">
+    <button id="engRe"><span class="ms">replay</span>重拍</button>
+    <button id="engCancel"><span class="ms">close</span>取消</button>
+    <button id="engSave" class="pri"><span class="ms">download</span>儲存照片</button>
+  </div>
+</div>
+
 <div class="ov" id="edov">
   <div class="top">拖曳四個圓點對齊紙張四角</div>
   <div class="mid"><canvas id="edc"></canvas></div>
@@ -144,7 +161,7 @@ input[type=range]{width:100%;accent-color:var(--ac)}
 </div>
 
 <script>
-const APP_VER='v4（2026-10-31）';
+const APP_VER='v5（2026-11-08）';
 if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbols Rounded'",'check').then(function(f){if(f.length)document.documentElement.classList.add('msok')}).catch(function(){});
 (function(){
   var $=function(id){return document.getElementById(id)};
@@ -420,6 +437,41 @@ if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbo
   }
   $('cam').onchange=function(e){addFiles(e.target.files);e.target.value=''};
   $('gal').onchange=function(e){addFiles(e.target.files);e.target.value=''};
+
+  /* ---------- 工程事項拍照：檔名「今天日期 工程事項」 ---------- */
+  var eng=null;
+  function engName(){return ymd(new Date()).replace(/-/g,'')+' 工程事項.jpg'}
+  $('engName').textContent='照片檔名：'+engName();
+  function engClose(){$('engov').classList.remove('on');if(eng){URL.revokeObjectURL(eng.url);eng=null}}
+  // 一律重新存成 JPG（iPhone 可能給 HEIC），不加入 PDF 頁面
+  $('eng').onchange=function(e){
+    var f=e.target.files[0];e.target.value='';if(!f)return;
+    engClose();$('msg').textContent='處理照片中…';
+    var u=URL.createObjectURL(f),img=new Image();
+    img.onload=function(){
+      var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
+      c.getContext('2d').drawImage(img,0,0);URL.revokeObjectURL(u);
+      c.toBlob(function(b){
+        if(!b){$('msg').textContent='無法轉成 JPG';return}
+        var name=engName();
+        eng={file:new File([b],name,{type:'image/jpeg'}),url:URL.createObjectURL(b)};
+        $('engImg').src=eng.url;$('engTop').textContent=name;$('engov').classList.add('on');$('msg').textContent='';
+      },'image/jpeg',.92);
+    };
+    img.onerror=function(){URL.revokeObjectURL(u);$('msg').textContent='無法讀取照片'};
+    img.src=u;
+  };
+  $('engRe').onclick=function(){engClose();$('eng').click()};
+  $('engCancel').onclick=engClose;
+  // iPhone 只允許在按鍵當下開分享面板，所以拍完先預覽，按「儲存照片」再存
+  $('engSave').onclick=async function(){
+    if(!eng)return;var f=eng.file;
+    try{
+      if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});$('msg').textContent='✅ 已分享：'+f.name}
+      else{var u=URL.createObjectURL(f),a=document.createElement('a');a.href=u;a.download=f.name;a.click();setTimeout(function(){URL.revokeObjectURL(u)},4000);$('msg').textContent='✅ 已下載：'+f.name}
+      engClose();
+    }catch(e){$('msg').textContent=(e&&e.name==='AbortError')?'已取消儲存':'失敗：'+((e&&e.message)||e)}
+  };
 
   /* ---------- 即時掃描 ---------- */
   var vid=$('vid'),ovl=$('ovl'),stream=null,timer=null,auto=true,live={q:null,last:null,stable:0,cool:0,n:0};
