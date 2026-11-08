@@ -109,19 +109,20 @@ input[type=range]{width:100%;accent-color:var(--ac)}
   <div id="empty" class="empty"><span class="ms">note_stack</span>尚未加入頁面</div>
 </div>
 
+<div class="card">
+  <h2><span class="ms">engineering</span>工程事項</h2>
+  <label class="btn sec" for="eng" style="margin:0;display:flex;width:100%"><span class="ms">add_a_photo</span>工程事項拍照</label>
+  <input type="file" id="eng" accept="image/*" capture="environment">
+  <div class="fname"><span class="ms">image</span><span id="engName"></span></div>
+  <div id="engList" class="pages" style="margin-top:10px"></div>
+</div>
+
 <div class="row">
   <button id="prev" class="sec" disabled><span class="ms">visibility</span>預覽</button>
-  <button id="make" disabled><span class="ms">picture_as_pdf</span>產生並儲存 PDF</button>
+  <button id="make" disabled><span class="ms">send</span><span id="makeT">產生並儲存 PDF</span></button>
   <button id="clear" class="sec" disabled><span class="ms">delete_sweep</span>全部清除</button>
 </div>
 <div id="msg"></div>
-<div class="card" style="margin-top:12px">
-  <h2><span class="ms">engineering</span>工程事項</h2>
-  <label class="btn sec" for="eng" style="margin:0"><span class="ms">add_a_photo</span>工程事項拍照</label>
-  <div style="font-size:13px;color:var(--mut);margin-top:8px">拍下的照片另存成 JPG，不會加入上面的 PDF。</div>
-  <input type="file" id="eng" accept="image/*" capture="environment">
-  <div class="fname"><span class="ms">image</span><span id="engName"></span></div>
-</div>
 <div id="ver"></div>
 
 <div class="ov" id="camov">
@@ -146,7 +147,7 @@ input[type=range]{width:100%;accent-color:var(--ac)}
   <div class="bot">
     <button id="engRe"><span class="ms">replay</span>重拍</button>
     <button id="engCancel"><span class="ms">close</span>取消</button>
-    <button id="engSave" class="pri"><span class="ms">download</span>儲存照片</button>
+    <button id="engSave" class="pri"><span class="ms">check</span>加入</button>
   </div>
 </div>
 
@@ -161,23 +162,25 @@ input[type=range]{width:100%;accent-color:var(--ac)}
 </div>
 
 <script>
-const APP_VER='v5（2026-11-08）';
+const APP_VER='v6（2026-11-08）';
 if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbols Rounded'",'check').then(function(f){if(f.length)document.documentElement.classList.add('msok')}).catch(function(){});
 (function(){
   var $=function(id){return document.getElementById(id)};
   $('ver').textContent='晨報小幫手 '+APP_VER;
-  var pages=[], DEF=[[.03,.03],[.97,.03],[.97,.97],[.03,.97]];
+  var pages=[], engs=[], DEF=[[.03,.03],[.97,.03],[.97,.97],[.03,.97]];
   function pad(n){return String(n).padStart(2,'0')}
   function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
   var y=new Date(); y.setDate(y.getDate()-1); $('date').value=ymd(y);
   function fileName(){
-    var d=($('date').value||ymd(y)).replace(/-/g,''),t=($('title').value||'').trim();
+    var d=$('date').value||ymd(y),t=($('title').value||'').trim();
     return (d+(t?' '+t:'')).replace(/[\\/:*?"<>|]/g,'_')+'.pdf';
   }
   function upd(){
     $('fname').textContent=fileName();
     $('empty').style.display=pages.length?'none':'block';
-    $('prev').disabled=$('make').disabled=$('clear').disabled=!pages.length;
+    $('prev').disabled=!pages.length;
+    $('make').disabled=!pages.length&&!engs.length;$('clear').disabled=!pages.length&&!engs.length;
+    $('makeT').textContent=pages.length&&engs.length?'產生 PDF＋'+engs.length+' 張照片並寄出':pages.length?'產生並儲存 PDF':engs.length?'寄出 '+engs.length+' 張照片':'產生並儲存 PDF';
   }
   $('date').oninput=$('title').oninput=upd;
 
@@ -397,7 +400,7 @@ if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbo
     });
     upd();
   }
-  $('clear').onclick=function(){if(confirm('清除全部頁面？')){pages=[];render()}};
+  $('clear').onclick=function(){if(confirm('清除全部頁面和工程事項照片？')){pages=[];engs.forEach(function(e){URL.revokeObjectURL(e.url)});engs=[];renderEng();render()}};
   $('prev').onclick=function(){
     var b=$('pvbox');b.innerHTML='';
     pages.forEach(function(p,i){
@@ -438,10 +441,23 @@ if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbo
   $('cam').onchange=function(e){addFiles(e.target.files);e.target.value=''};
   $('gal').onchange=function(e){addFiles(e.target.files);e.target.value=''};
 
-  /* ---------- 工程事項拍照：檔名「今天日期 工程事項」 ---------- */
+  /* ---------- 工程事項拍照：檔名「今天日期 工程事項」，跟 PDF 一起寄出 ---------- */
   var eng=null;
-  function engName(){return ymd(new Date()).replace(/-/g,'')+' 工程事項.jpg'}
-  $('engName').textContent='照片檔名：'+engName();
+  function engName(i){return ymd(new Date())+' 工程事項'+(i?'-'+(i+1):'')+'.jpg'}
+  function renderEng(){
+    var box=$('engList');box.innerHTML='';
+    engs.forEach(function(e,i){
+      var d=document.createElement('div');d.className='pg';
+      var im=document.createElement('img');im.src=e.url;im.style.aspectRatio='4/3';im.style.objectFit='cover';
+      var bar=document.createElement('div');bar.className='bar';
+      var sp=document.createElement('span');sp.className='n';sp.textContent=engName(i);sp.style.flex='1 1 0';sp.style.wordBreak='break-all';
+      var x=document.createElement('button');x.innerHTML='<span class="ms">close</span>';x.title=x.ariaLabel='刪除';x.style.flex='0 0 36px';
+      x.onclick=function(){URL.revokeObjectURL(e.url);engs.splice(i,1);renderEng()};
+      bar.appendChild(sp);bar.appendChild(x);d.appendChild(im);d.appendChild(bar);box.appendChild(d);
+    });
+    $('engName').textContent=engs.length?'已拍 '+engs.length+' 張，會跟 PDF 一起寄出':'照片檔名：'+engName(0)+'（JPG，跟 PDF 一起寄出）';
+    upd();
+  }
   function engClose(){$('engov').classList.remove('on');if(eng){URL.revokeObjectURL(eng.url);eng=null}}
   // 一律重新存成 JPG（iPhone 可能給 HEIC），不加入 PDF 頁面
   $('eng').onchange=function(e){
@@ -453,9 +469,8 @@ if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbo
       c.getContext('2d').drawImage(img,0,0);URL.revokeObjectURL(u);
       c.toBlob(function(b){
         if(!b){$('msg').textContent='無法轉成 JPG';return}
-        var name=engName();
-        eng={file:new File([b],name,{type:'image/jpeg'}),url:URL.createObjectURL(b)};
-        $('engImg').src=eng.url;$('engTop').textContent=name;$('engov').classList.add('on');$('msg').textContent='';
+        eng={blob:b,url:URL.createObjectURL(b)};
+        $('engImg').src=eng.url;$('engTop').textContent=engName(engs.length);$('engov').classList.add('on');$('msg').textContent='';
       },'image/jpeg',.92);
     };
     img.onerror=function(){URL.revokeObjectURL(u);$('msg').textContent='無法讀取照片'};
@@ -463,15 +478,7 @@ if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbo
   };
   $('engRe').onclick=function(){engClose();$('eng').click()};
   $('engCancel').onclick=engClose;
-  // iPhone 只允許在按鍵當下開分享面板，所以拍完先預覽，按「儲存照片」再存
-  $('engSave').onclick=async function(){
-    if(!eng)return;var f=eng.file;
-    try{
-      if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});$('msg').textContent='✅ 已分享：'+f.name}
-      else{var u=URL.createObjectURL(f),a=document.createElement('a');a.href=u;a.download=f.name;a.click();setTimeout(function(){URL.revokeObjectURL(u)},4000);$('msg').textContent='✅ 已下載：'+f.name}
-      engClose();
-    }catch(e){$('msg').textContent=(e&&e.name==='AbortError')?'已取消儲存':'失敗：'+((e&&e.message)||e)}
-  };
+  $('engSave').onclick=function(){if(!eng)return;engs.push(eng);eng=null;$('engov').classList.remove('on');renderEng()};
 
   /* ---------- 即時掃描 ---------- */
   var vid=$('vid'),ovl=$('ovl'),stream=null,timer=null,auto=true,live={q:null,last:null,stable:0,cool:0,n:0};
@@ -554,24 +561,30 @@ if(document.fonts&&document.fonts.load)document.fonts.load("22px 'Material Symbo
   $('edCancel').onclick=function(){$('edov').classList.remove('on')};
   $('edOk').onclick=function(){ed.p.quad=ed.q;build(ed.p);$('edov').classList.remove('on');render()};
 
-  /* ---------- 輸出 PDF（iPhone 用分享面板「儲存到檔案」，其他瀏覽器直接下載） ---------- */
+  /* ---------- 輸出 PDF＋工程事項照片（iPhone 用分享面板一次寄出，其他瀏覽器逐一下載） ---------- */
   $('make').onclick=async function(){
-    var btn=$('make');btn.disabled=true;$('msg').textContent='產生 PDF 中…';
+    var btn=$('make');btn.disabled=true;$('msg').textContent=pages.length?'產生 PDF 中…':'準備照片中…';
     try{
+      var files=[];
+      if(pages.length){
       var J=window.jspdf.jsPDF,doc=new J({unit:'mm',format:'a4',orientation:'portrait'});
       pages.forEach(function(p,i){
         if(i)doc.addPage('a4','portrait');
         var c=p.out,W=210,H=297,r=Math.min(W/c.width,H/c.height),w=c.width*r,h=c.height*r;
         doc.addImage(c.toDataURL('image/jpeg',.85),'JPEG',(W-w)/2,(H-h)/2,w,h,undefined,'FAST');
       });
-      var blob=doc.output('blob'),name=fileName();
-      var f=new File([blob],name,{type:'application/pdf'});
-      if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});$('msg').textContent='✅ 已分享'}
-      else{var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();$('msg').textContent='✅ 已下載：'+name}
+      files.push(new File([doc.output('blob')],fileName(),{type:'application/pdf'}));
+      }
+      engs.forEach(function(e,i){files.push(new File([e.blob],engName(i),{type:'image/jpeg'}))});
+      if(navigator.canShare&&navigator.canShare({files:files})){await navigator.share({files:files});$('msg').textContent='✅ 已分享 '+files.length+' 個檔案'}
+      else{
+        for(var k=0;k<files.length;k++){(function(f){var u=URL.createObjectURL(f),a=document.createElement('a');a.href=u;a.download=f.name;a.click();setTimeout(function(){URL.revokeObjectURL(u)},4000)})(files[k]);await new Promise(function(r){setTimeout(r,400)})}
+        $('msg').textContent='✅ 已下載 '+files.length+' 個檔案';
+      }
     }catch(e){$('msg').textContent=(e&&e.name==='AbortError')?'已取消儲存':'失敗：'+((e&&e.message)||e)}
     btn.disabled=false;
   };
-  upd();
+  renderEng();
 })();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 </script>
