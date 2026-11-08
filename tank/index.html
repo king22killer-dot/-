@@ -37,6 +37,7 @@ button.sm{flex:1;width:auto;margin:0;padding:7px 10px;font-size:15px;white-space
 .pv img{width:100%;height:100%;object-fit:cover}
 .pv.tall{aspect-ratio:3/4;max-width:140px;margin:auto;border:1px dashed var(--bd);background:var(--bg)}
 .pv.tall img{object-fit:contain}
+.rot{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:50%;width:28px;height:28px;font-size:17px;line-height:1;padding:0}
 .x{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:50%;width:24px;height:24px;font-size:14px}
 button.main,button.sub{width:100%;font:inherit;font-weight:600;padding:9px;border-radius:8px;border:1px solid var(--ac);margin-top:6px}
 button.main{background:var(--ac);color:var(--acx)}
@@ -82,7 +83,7 @@ button.sub{background:transparent;color:var(--ac)}
 <div id="msg"></div>
 
 <script>
-const APP_VER='v2（2026-10-31）';
+const APP_VER='v3（2026-11-08）';
 const STEPS=["車輛熄火，鑰匙拔除","車輛前後放置三角錐","輪擋放置","槽車接地確認","人員防護具","銜接管路種類確認"];
 const photos=new Array(6).fill(null); let checklist=null;
 const $=id=>document.getElementById(id);
@@ -151,7 +152,11 @@ function showPv(id,data,i){
   const im=document.createElement("img");im.src=data.url;el.appendChild(im);
   const b=document.createElement("button");b.className="x";b.textContent="✕";
   b.onclick=ev=>{ev.stopPropagation();if(i>=0)photos[i]=null;else checklist=null;showPv(id,null,i)};
-  el.appendChild(b);
+  const r=document.createElement("button");r.className="rot";r.textContent="⟳";r.setAttribute("aria-label","旋轉照片");
+  r.onclick=async ev=>{ev.stopPropagation();r.disabled=true;
+    const nd=await proc(data.src,i>=0,(data.rot+1)%4);
+    if(i>=0)photos[i]=nd;else checklist=nd;showPv(id,nd,i)};
+  el.append(b,r);
 }
 
 async function load(file){
@@ -159,16 +164,23 @@ async function load(file){
     return await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=URL.createObjectURL(file)});
   }
 }
-// returns {blob,w,h,url}; cover=true crops to 4:3
-async function proc(file,cover){
-  const im=await load(file);const sw=im.width,sh=im.height;
+// returns {blob,w,h,url,src,rot}; cover=true crops to 4:3; rot = 順時針轉幾個 90°
+async function proc(file,cover,rot=0){
+  let im=await load(file);
+  if(rot){
+    const rc=document.createElement("canvas"),odd=rot%2;
+    rc.width=odd?im.height:im.width;rc.height=odd?im.width:im.height;
+    const rg=rc.getContext("2d");rg.translate(rc.width/2,rc.height/2);rg.rotate(rot*Math.PI/2);rg.drawImage(im,-im.width/2,-im.height/2);
+    im=rc;
+  }
+  const sw=im.width,sh=im.height;
   let cw,ch,sx=0,sy=0,sW=sw,sH=sh;
   if(cover){cw=720;ch=540;const r=4/3;if(sw/sh>r){sW=sh*r;sx=(sw-sW)/2}else{sH=sw/r;sy=(sh-sH)/2}}
   else{const m=1280,k=Math.min(1,m/Math.max(sw,sh));cw=Math.round(sw*k);ch=Math.round(sh*k)}
   const c=document.createElement("canvas");c.width=cw;c.height=ch;
   const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,cw,ch);g.drawImage(im,sx,sy,sW,sH,0,0,cw,ch);
   const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",0.72));
-  return {blob,w:cw,h:ch,url:URL.createObjectURL(blob)};
+  return {blob,w:cw,h:ch,url:URL.createObjectURL(blob),src:file,rot};
 }
 async function setPhoto(i,f){photos[i]=await proc(f,true);showPv("pv"+i,photos[i],i)}
 async function setChecklist(f){checklist=await proc(f,false);showPv("clPv",checklist,-1)}
