@@ -9,3 +9,7 @@
 ## 槽車入料小幫手
 
 另一個獨立的 App，放在 `tank/` 資料夾：https://king22killer-dot.github.io/-/tank/ （用 Safari 開啟 → 分享 → 加入主畫面）。
+
+## 停車費小幫手
+
+另一個獨立的 App，放在 `parking/` 資料夾：https://king22killer-dot.github.io/-/parking/ （用 Safari 開啟 → 分享 → 加入主畫面）。一鍵查詢汽機車停車費與交通罰鍰，可以只選要查的縣市。目前是介面設計稿，查詢結果為模擬資料。

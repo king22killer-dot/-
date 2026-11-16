@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="停車費小幫手">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>停車費小幫手</title>
+<style>
+/* 風格沿用「班表小幫手」：iOS 頂欄＋藍色紙紋底，下方分頁列切換 查詢／車輛／紀錄 */
+:root{
+  --bg1:#dbe7f5;--bg2:#c9daef;--dot1:rgba(255,255,255,.55);--dot2:rgba(120,150,200,.18);
+  --surface:#ffffff;--sheet:#f4f6f9;--fg:#141922;--muted:#5f6b7a;--hair:#d9dee6;
+  --accent:#2f7de1;--accent2:#1f5fb8;--icon:#4a78b0;--ok:#2c9b12;--okbg:#e4f7dc;
+  --danger:#e5484d;--dangerbg:#fde8e8;--warn:#c2410c;--warnbg:#fff1e6;--chipline:#b4bcc8;--input:#ffffff;
+  --soft:rgba(255,255,255,.72);--plate:#ffffff;--platefg:#111;
+  --font:-apple-system,BlinkMacSystemFont,"PingFang TC","Heiti TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg1:#142030;--bg2:#0e1622;--dot1:rgba(255,255,255,.05);--dot2:rgba(120,160,220,.08);
+  --surface:#1a2332;--sheet:#131b27;--fg:#e8edf5;--muted:#9aa6b8;--hair:#2a3546;
+  --accent:#5aa0ff;--accent2:#3d7fe0;--icon:#8fb4e6;--ok:#7fe05c;--okbg:#1d3320;
+  --danger:#ff6b6f;--dangerbg:#3a1d22;--warn:#fb923c;--warnbg:#3a2716;--chipline:#4a5568;--input:#0f1622;
+  --soft:rgba(26,35,50,.8);--plate:#e9edf3;--platefg:#111;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg1:#142030;--bg2:#0e1622;--dot1:rgba(255,255,255,.05);--dot2:rgba(120,160,220,.08);
+  --surface:#1a2332;--sheet:#131b27;--fg:#e8edf5;--muted:#9aa6b8;--hair:#2a3546;
+  --accent:#5aa0ff;--accent2:#3d7fe0;--icon:#8fb4e6;--ok:#7fe05c;--okbg:#1d3320;
+  --danger:#ff6b6f;--dangerbg:#3a1d22;--warn:#fb923c;--warnbg:#3a2716;--chipline:#4a5568;--input:#0f1622;
+  --soft:rgba(26,35,50,.8);--plate:#e9edf3;--platefg:#111;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{font-family:var(--font);color:var(--fg);background:var(--bg1);
+  background-image:radial-gradient(circle at 20% 30%,var(--dot1) 0 2px,transparent 3px),
+    radial-gradient(circle at 70% 60%,var(--dot1) 0 1.5px,transparent 3px),
+    radial-gradient(circle at 40% 80%,var(--dot2) 0 2px,transparent 4px),
+    linear-gradient(135deg,var(--bg1),var(--bg2));
+  background-size:23px 23px,31px 31px,41px 41px,100% 100%;background-attachment:fixed;
+  -webkit-user-select:none;user-select:none;overscroll-behavior:none;font-size:15px;
+  padding-top:env(safe-area-inset-top,0px)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+button{font-family:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--hair);
+  padding:0 16px;display:flex;align-items:center;height:50px}
+header h1{flex:1;text-align:center;font-size:18px;margin:0;font-weight:600;letter-spacing:1px}
+header .side{width:64px}
+header .menu-btn{background:none;border:0;color:var(--accent);font-size:17px;text-decoration:underline;padding:8px 0;width:64px;text-align:right}
+main{max-width:620px;margin:0 auto;padding:10px 16px calc(84px + env(safe-area-inset-bottom,0px))}
+.num{font-variant-numeric:tabular-nums}
+/* 範例提示 */
+.sample{display:flex;align-items:center;gap:10px;background:var(--soft);border:1px dashed var(--chipline);border-radius:12px;padding:8px 12px;margin-bottom:10px;font-size:13px;color:var(--muted)}
+.sample span{flex:1}
+/* 車輛選擇 */
+.picks{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+.picks::-webkit-scrollbar{display:none}
+.pick{flex:none;display:flex;align-items:center;gap:6px;border:2px solid var(--chipline);border-radius:12px;padding:7px 12px;font-size:15px;background:var(--surface)}
+.pick svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2}
+.pick.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;color:var(--accent)}
+.pick b{font-weight:600;letter-spacing:.5px}
+/* 一鍵查詢大按鈕 */
+.hero{display:flex;flex-direction:column;align-items:center;padding:18px 0 8px}
+.big{width:188px;height:188px;border-radius:50%;border:0;color:#fff;
+  background:radial-gradient(circle at 35% 30%,#5aa0ff,var(--accent) 55%,var(--accent2));
+  box-shadow:0 10px 26px rgba(47,125,225,.35),inset 0 -6px 14px rgba(0,0,0,.15),0 0 0 8px var(--soft);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:transform .12s}
+.big:active{transform:scale(.96)}
+.big svg{width:54px;height:54px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round}
+.big b{font-size:24px;letter-spacing:3px}
+.big small{font-size:12px;opacity:.9}
+.big.busy{pointer-events:none;background:radial-gradient(circle at 35% 30%,#8fb4e6,#6c8fbf)}
+.big.busy svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.last{margin-top:14px;font-size:13px;color:var(--muted);text-align:center}
+/* 查詢進度 */
+.prog{background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:6px 12px;margin-top:12px}
+.prow{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--hair);font-size:15px}
+.prow:first-child{border-top:0}
+.prow span{flex:1}
+.prow i{font-style:normal;font-size:13px;color:var(--muted)}
+.spin{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--hair);border-top-color:var(--accent);animation:spin .8s linear infinite;flex:none}
+.okc{width:18px;height:18px;border-radius:50%;background:var(--ok);flex:none;display:grid;place-items:center}
+.okc svg{width:11px;height:11px;stroke:#fff;stroke-width:3.5;fill:none}
+/* 結果總覽 */
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.tile{background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:12px;text-align:left}
+.tile .k{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.tile .v{font-size:26px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.tile .c{font-size:13px;color:var(--muted)}
+.tile.p .v{color:var(--accent)}
+.tile.f .v{color:var(--danger)}
+.total{grid-column:1/-1;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:12px}
+.total span{flex:1;font-size:15px}
+.total b{font-size:22px;font-variant-numeric:tabular-nums}
+.total.clear{background:var(--okbg);border-color:transparent;color:var(--ok);font-weight:600;justify-content:center}
+.seg{display:flex;background:var(--soft);border:1px solid var(--hair);border-radius:10px;padding:3px;margin:14px 0 10px}
+.seg button{flex:1;border:0;background:none;border-radius:8px;padding:7px 0;font-size:14px;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--fg);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.group{margin-bottom:16px}
+.group h3{font-size:13px;color:var(--muted);margin:0 4px 6px;letter-spacing:.5px;display:flex;justify-content:space-between;align-items:center}
+.list{background:var(--surface);border:1px solid var(--hair);border-radius:14px;overflow:hidden}
+.item{display:flex;align-items:center;gap:10px;padding:11px 12px;border-top:1px solid var(--hair);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left}
+.item:first-child{border-top:0}
+.badge{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:16px;color:#fff}
+.badge.p{background:var(--accent)}
+.badge.f{background:var(--danger)}
+.item .body{flex:1;min-width:0}
+.item .t{font-size:15px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .m{font-size:12px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.item .r{text-align:right;flex:none}
+.item .amt{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;border-radius:6px;padding:1px 6px;font-size:11px;margin-top:3px;font-weight:600}
+.tag.late{background:var(--dangerbg);color:var(--danger)}
+.tag.soon{background:var(--warnbg);color:var(--warn)}
+.tag.ok{background:var(--okbg);color:var(--ok)}
+.item.paid{opacity:.55}
+.item.paid .amt{text-decoration:line-through}
+/* 縣市選擇 */
+.cityCard{background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:10px 12px;margin-top:4px}
+.ch{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;margin-bottom:8px;gap:8px}
+.ch span{color:var(--muted);font-size:12px;white-space:nowrap}
+.ch span b{color:var(--accent);font-size:14px}
+.cityCard .chips{gap:6px}
+.cityCard .chip{padding:6px 10px;font-size:14px}
+.chip.more{border-style:dashed;color:var(--muted)}
+.fineT{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--hair);font-size:15px}
+.fineT input{width:20px;height:20px;accent-color:var(--accent);margin:0;flex:none}
+.fineT small{color:var(--muted);font-size:12px}
+.empty{text-align:center;color:var(--muted);padding:28px 12px;font-size:14px;line-height:1.7}
+/* 車輛 */
+.panel-head{display:flex;gap:8px;align-items:center;margin:4px 0 12px}
+.panel-head h2{font-size:22px;margin:0;flex:1}
+.newbtn{border:0;background:var(--accent);color:#fff;border-radius:10px;padding:8px 14px;font-size:15px}
+.car{display:flex;align-items:center;gap:12px;padding:12px;border-top:1px solid var(--hair)}
+.car:first-child{border-top:0}
+.car .kind{width:40px;height:40px;border-radius:12px;background:color-mix(in srgb,var(--icon) 18%,transparent);color:var(--icon);display:grid;place-items:center;flex:none}
+.car .kind svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2}
+.car .body{flex:1;min-width:0}
+.plate{display:inline-block;background:var(--plate);color:var(--platefg);border:2px solid #222;border-radius:6px;padding:1px 8px;font:700 17px/1.3 "DIN Alternate","Arial Narrow",Arial,sans-serif;letter-spacing:1.5px}
+.car .nm{font-size:13px;color:var(--muted);margin-top:4px}
+.car .edit{background:none;border:0;color:var(--accent);font-size:15px;padding:6px}
+.note{font-size:12px;color:var(--muted);line-height:1.6;margin:10px 4px}
+/* 紀錄 */
+.hist{display:flex;align-items:center;gap:10px;padding:11px 12px;border-top:1px solid var(--hair)}
+.hist:first-child{border-top:0}
+.hist .body{flex:1}
+.hist .t{font-size:15px;font-variant-numeric:tabular-nums}
+.hist .m{font-size:12px;color:var(--muted);margin-top:2px}
+.hist b{font-variant-numeric:tabular-nums}
+/* 分頁列 */
+#tabs{position:fixed;left:0;right:0;bottom:0;z-index:7;background:var(--surface);border-top:1px solid var(--hair);
+  display:flex;padding:4px max(8px,env(safe-area-inset-left,0px)) calc(4px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-right,0px))}
+#tabs button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted);padding:6px 0;position:relative}
+#tabs button svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2}
+#tabs button.on{color:var(--accent)}
+#tabs .n{position:absolute;top:2px;left:calc(50% + 8px);background:var(--danger);color:#fff;border-radius:8px;font-size:10px;min-width:16px;height:16px;line-height:16px;padding:0 4px}
+/* 底部視窗 */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--sheet);width:100%;max-width:620px;max-height:90vh;overflow:auto;border-radius:16px 16px 0 0;
+  padding:14px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));-webkit-user-select:text;user-select:text}
+.sheet h2{font-size:18px;margin:2px 0 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sheet h2 button{font-size:16px;background:none;border:0;color:var(--accent);padding:4px}
+.sheet h3{font-size:14px;margin:16px 0 6px;color:var(--muted)}
+.kv{background:var(--surface);border:1px solid var(--hair);border-radius:12px;overflow:hidden}
+.kv div{display:flex;gap:12px;padding:10px 12px;border-top:1px solid var(--hair);font-size:15px}
+.kv div:first-child{border-top:0}
+.kv span{color:var(--muted);width:76px;flex:none}
+.kv b{font-weight:500;flex:1;word-break:break-word;font-variant-numeric:tabular-nums}
+.bigamt{text-align:center;font-size:34px;font-weight:800;margin:4px 0 12px;font-variant-numeric:tabular-nums}
+.btn{display:block;width:100%;font-size:17px;padding:12px;border-radius:10px;border:0;background:var(--accent);color:#fff;margin-top:10px}
+.btn.gray{background:var(--hair);color:var(--fg)}
+.btn.line{background:var(--surface);color:var(--fg);border:1px solid var(--hair)}
+.btns2{display:flex;gap:8px}
+.btns2 .btn{flex:1}
+.menu .btn{text-align:left;background:var(--surface);color:var(--fg);border:1px solid var(--hair);margin-top:8px}
+.field{width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--chipline);border-radius:10px;background:var(--input);color:var(--fg);font-family:inherit}
+.lbl{font-size:13px;color:var(--muted);margin:12px 4px 6px;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--chipline);border-radius:10px;padding:8px 12px;font-size:15px;background:var(--surface)}
+.chip.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;color:var(--accent)}
+.tgl{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--hair);border-radius:12px;padding:12px;margin-top:8px;font-size:16px}
+.tgl span{flex:1}
+.tgl small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.tgl input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.barcode{background:#fff;border-radius:12px;padding:14px 12px 8px;text-align:center;color:#111;margin-top:6px}
+.barcode svg{width:100%;height:56px;display:block}
+.barcode div{font:13px/1.6 Menlo,monospace;letter-spacing:1px}
+.help p{margin:6px 0;line-height:1.65;font-size:15px}
+.small{font-size:13px;color:var(--muted);line-height:1.5}
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(0,0,0,.8);
+  color:#fff;padding:9px 16px;border-radius:20px;font-size:15px;z-index:50;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){.spin,.big.busy svg{animation:none}#toast,.big{transition:none}}
+</style>
+</head>
+<body>
+<header><div class="side"></div><h1>停車費小幫手</h1><button class="menu-btn" id="menuBtn">選單</button></header>
+<main>
+  <div class="sample"><span>介面設計稿：查詢結果是模擬資料，不是真實帳單。</span></div>
+
+  <!-- 查詢 -->
+  <section class="view" id="v-q">
+    <div class="picks" id="picks"></div>
+    <div class="cityCard">
+      <div class="ch"><b>🅿️ 停車費要查哪裡？</b><span id="verN"></span></div>
+      <div class="chips" id="cityRow"></div>
+      <label class="fineT"><input type="checkbox" id="fineOn"><span>也查交通罰鍰 <small>（全國一起查，1 次驗證）</small></span></label>
+    </div>
+    <div class="hero">
+      <button class="big" id="goBtn" aria-label="一鍵查詢">
+        <svg viewBox="0 0 48 48"><circle cx="21" cy="21" r="13"/><path d="M31 31l10 10"/></svg>
+        <b>一鍵查詢</b><small id="goSub">停車費＋罰鍰</small>
+      </button>
+      <div class="last num" id="lastTxt"></div>
+    </div>
+    <div class="prog" id="prog" hidden></div>
+    <div id="result"></div>
+  </section>
+
+  <!-- 車輛 -->
+  <section class="view" id="v-car" hidden>
+    <div class="panel-head"><h2>我的車輛</h2><button class="newbtn" id="carNew">＋ 新增</button></div>
+    <div class="list" id="carList"></div>
+    <p class="note">停車費只要車號就能查。罰鍰（交通違規罰單）要另外填身分證字號和生日，資料只存在這支手機。</p>
+  </section>
+
+  <!-- 紀錄 -->
+  <section class="view" id="v-his" hidden>
+    <div class="panel-head"><h2>查詢紀錄</h2></div>
+    <div id="hisList"></div>
+  </section>
+</main>
+
+<nav id="tabs">
+  <button data-tab="q" class="on"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>查詢<span class="n" id="qN" hidden></span></button>
+  <button data-tab="car"><svg viewBox="0 0 24 24"><path d="M3 16v-4l2.2-5.2A2 2 0 0 1 7 5.5h10a2 2 0 0 1 1.8 1.3L21 12v4"/><path d="M2 12h20v5H2zM5 17v2M19 17v2"/><circle cx="6.5" cy="14.5" r=".6"/><circle cx="17.5" cy="14.5" r=".6"/></svg>車輛</button>
+  <button data-tab="his"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>紀錄</button>
+</nav>
+<div class="mask" id="mask" hidden><div class="sheet" id="sheet"></div></div>
+<div id="toast"></div>
+
+<script>
+const APP_VER='v2（2026-11-16）';
+const KEY='parking-helper-v1';
+const HELP=[
+  '【選縣市】「停車費要查哪裡？」點縣市來選或取消，只查有去停車的縣市就好。每個縣市大約要輸入 1 次驗證碼，選越少、要輸入的驗證碼越少；右上會顯示這次大約要幾次。按「更多縣市」可以選其他縣市，選過的下次會記住。',
+  '【一鍵查詢】按中間的大圓鍵，會一次查完選好的縣市停車費；有勾「也查交通罰鍰」會順便查罰鍰（全國一起查）。最上面可以只選一輛車查。',
+  '【看結果】上方兩格是停車費和罰鍰的未繳筆數與金額，下面依車輛列出每一筆。紅色「已逾期」要盡快繳，橘色是快到期。',
+  '【單筆明細】點任一筆可以看地點、時間、繳費期限，並顯示超商繳費條碼；繳完按「標記已繳」，下次就不會再算進總額。',
+  '【我的車輛】在「車輛」頁新增車號，選汽車或機車。要查罰鍰的車再填身分證字號和生日。',
+  '【到期提醒】選單 →「到期提醒」打開後，繳費期限前 3 天會在分頁列顯示紅色數字。',
+  '【查詢紀錄】每次查詢都會留一筆，可以看當時未繳多少。'
+];
+const CITIES=['臺北市','新北市','桃園市','臺中市','臺南市','高雄市','基隆市','新竹市','新竹縣','苗栗縣','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣'];
+const COMMON=CITIES.slice(0,6);
+let showMore=false;
+const ICON={
+  car:'<svg viewBox="0 0 24 24"><path d="M3 16v-4l2.2-5.2A2 2 0 0 1 7 5.5h10a2 2 0 0 1 1.8 1.3L21 12v4"/><path d="M2 12h20v5H2zM5 17v2M19 17v2"/></svg>',
+  moto:'<svg viewBox="0 0 24 24"><circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5L10 10h5l3.5 6.5M14 6h3l1 4M8 10h4"/></svg>',
+  all:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>'
+};
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>'$'+n.toLocaleString('en-US');
+const md=d=>(d.getMonth()+1)+'/'+d.getDate();
+const hm=d=>pad(d.getHours())+':'+pad(d.getMinutes());
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+let today=new Date();today.setHours(0,0,0,0);
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const dayOf=d=>{const x=new Date(d);x.setHours(0,0,0,0);return +x};
+
+let S=null;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S||!Array.isArray(S.cars))S={
+  cars:[{id:'c1',plate:'ABC-1234',kind:'car',name:'家裡的車',fine:true},{id:'c2',plate:'MNO-5678',kind:'moto',name:'上班機車',fine:true}],
+  cities:['臺北市','新北市'],fineOn:true,remind:true,paid:{},hist:[],pick:'all'};
+if(S.fineOn===undefined)S.fineOn=true;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let R=null; // 最近一次查詢結果
+let filter='all';
+
+/* ---- 模擬資料（依車號固定產生，方便看設計） ---- */
+function rng(seed){let h=0;for(const c of seed)h=(h*31+c.charCodeAt(0))>>>0;return()=>{h=(h*1103515245+12345)>>>0;return h/4294967296}}
+const STREETS={'臺北市':['信義路五段','忠孝東路四段','民生東路三段'],'新北市':['中山路二段','文化路一段','中正路'],'桃園市':['中正路','復興路','經國路'],
+  '臺中市':['台灣大道二段','公益路','文心路三段'],'臺南市':['中華東路','府前路一段','海安路二段'],'高雄市':['中山一路','五福三路','博愛二路'],'基隆市':['愛三路','信二路'],'新竹市':['中華路二段','光復路一段']};
+const FINES=[['違規停車（禁止臨時停車處所）',900],['未依規定停放機車停車格',600],['行車速度超過規定之最高速限',1600],['不依標誌標線指示行駛',900],['闖紅燈',2700]];
+function mockFor(car){
+  const r=rng(car.plate),out=[];
+  const cities=S.cities;
+  const np=cities.length?1+Math.floor(r()*3):0;
+  for(let i=0;i<np;i++){
+    const city=cities[Math.floor(r()*cities.length)],sts=STREETS[city]||['中正路','中山路','民生路'],st=sts[Math.floor(r()*sts.length)];
+    const ago=Math.floor(r()*20)+1,at=addDays(today,-ago);at.setHours(8+Math.floor(r()*12),Math.floor(r()*60));
+    const hrs=1+Math.floor(r()*4),amt=car.kind==='moto'?20*hrs:(30+Math.floor(r()*3)*10)*hrs;
+    out.push({id:car.plate+'-p'+i,type:'p',car:car.id,city,place:st,at:+at,due:dayOf(addDays(at,15)),amt,hrs,no:'P'+Math.floor(1e9+r()*9e9)});
+  }
+  if(S.fineOn&&car.fine&&r()>.25){
+    const f=FINES[Math.floor(r()*(car.kind==='moto'?2:FINES.length))],city=COMMON[Math.floor(r()*COMMON.length)];
+    const at=addDays(today,-(10+Math.floor(r()*25)));at.setHours(7+Math.floor(r()*14),Math.floor(r()*60));
+    out.push({id:car.plate+'-f',type:'f',car:car.id,city,place:STREETS[city][0],at:+at,due:dayOf(addDays(at,30)),amt:f[1],what:f[0],no:'A'+Math.floor(1e8+r()*9e8),law:'道路交通管理處罰條例'});
+  }
+  return out;
+}
+function dueTag(it){
+  if(S.paid[it.id])return'<span class="tag ok">已繳</span>';
+  const d=Math.round((it.due-today)/864e5);
+  if(d<0)return'<span class="tag late">已逾期 '+(-d)+' 天</span>';
+  if(d<=3)return'<span class="tag soon">'+(d?'剩 '+d+' 天':'今天到期')+'</span>';
+  return'<span class="tag ok">期限 '+md(new Date(it.due))+'</span>';
+}
+
+/* ---- 畫面 ---- */
+function renderPicks(){
+  const list=[{id:'all',plate:'全部車輛',kind:'all'}].concat(S.cars);
+  if(!S.cars.find(c=>c.id===S.pick))S.pick='all';
+  $('picks').innerHTML=list.map(c=>'<button class="pick'+(S.pick===c.id?' sel':'')+'" data-id="'+c.id+'">'+ICON[c.kind]+'<b>'+esc(c.plate)+'</b></button>').join('');
+  const n=S.pick==='all'?S.cars.length:1;
+  const fine=S.fineOn&&targetCars().some(c=>c.fine);
+  $('goSub').textContent=n+' 輛 · '+(S.cities.length===1?S.cities[0]:S.cities.length?S.cities.length+' 縣市':'只查罰鍰')+(fine&&S.cities.length?'＋罰鍰':'');
+  renderCities();
+  const h=S.hist[0];
+  $('lastTxt').textContent=h?'上次查詢：'+md(new Date(h.at))+' '+hm(new Date(h.at)):'還沒查過，按上面的圓鍵開始';
+}
+$('picks').onclick=e=>{const b=e.target.closest('.pick');if(!b)return;S.pick=b.dataset.id;save();renderPicks()};
+
+function renderCities(){
+  const list=showMore?CITIES:CITIES.filter(c=>COMMON.includes(c)||S.cities.includes(c));
+  $('cityRow').innerHTML=list.map(c=>'<button class="chip'+(S.cities.includes(c)?' sel':'')+'" data-c="'+c+'">'+c+'</button>').join('')+
+    '<button class="chip more" data-more>'+(showMore?'收起 ▴':'更多縣市 ▾')+'</button>';
+  const v=S.cities.length+(S.fineOn&&targetCars().some(c=>c.fine)?1:0);
+  $('verN').innerHTML=v?'約需輸入 <b>'+v+'</b> 次驗證碼':'請至少選一項';
+  $('fineOn').checked=S.fineOn;
+}
+$('cityRow').onclick=e=>{
+  const b=e.target.closest('.chip');if(!b)return;
+  if(b.dataset.more!==undefined){showMore=!showMore;renderCities();return}
+  const c=b.dataset.c;
+  S.cities=S.cities.includes(c)?S.cities.filter(x=>x!==c):CITIES.filter(x=>x===c||S.cities.includes(x));
+  save();renderPicks();
+};
+$('fineOn').onchange=e=>{S.fineOn=e.target.checked;save();renderPicks()};
+function targetCars(){return S.pick==='all'?S.cars:S.cars.filter(c=>c.id===S.pick)}
+$('goBtn').onclick=async()=>{
+  const cars=targetCars();
+  if(!cars.length){toast('請先到「車輛」新增車號');return}
+  const doFine=S.fineOn&&cars.some(c=>c.fine);
+  if(!S.cities.length&&!doFine){toast('請至少選一個縣市');return}
+  const btn=$('goBtn');btn.classList.add('busy');$('result').innerHTML='';
+  const steps=S.cities.map(c=>c+' 停車費').concat(doFine?['交通違規罰鍰（全國）']:[]);
+  const p=$('prog');p.hidden=false;
+  p.innerHTML=steps.map((s,i)=>'<div class="prow" id="ps'+i+'"><div class="spin"></div><span>'+s+'</span><i>驗證中</i></div>').join('');
+  p.scrollIntoView({behavior:'smooth',block:'center'});
+  for(let i=0;i<steps.length;i++){
+    await new Promise(r=>setTimeout(r,170+Math.random()*180));
+    const row=$('ps'+i);row.firstChild.outerHTML='<div class="okc"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-5"/></svg></div>';
+    row.querySelector('i').textContent='完成';
+  }
+  await new Promise(r=>setTimeout(r,250));
+  p.hidden=true;btn.classList.remove('busy');
+  R={at:Date.now(),items:cars.flatMap(mockFor)};
+  const un=R.items.filter(i=>!S.paid[i.id]);
+  S.hist.unshift({id:uid(),at:R.at,cars:cars.map(c=>c.plate),n:un.length,amt:un.reduce((a,i)=>a+i.amt,0)});
+  S.hist=S.hist.slice(0,30);save();
+  renderPicks();renderResult();renderBadge();
+  document.querySelector('.sum').scrollIntoView({behavior:'smooth',block:'start'});
+  toast(un.length?'查到 '+un.length+' 筆未繳':'全部繳清，沒有欠費 🎉');
+};
+
+function renderResult(){
+  if(!R){$('result').innerHTML='';return}
+  const un=R.items.filter(i=>!S.paid[i.id]);
+  const P=un.filter(i=>i.type==='p'),F=un.filter(i=>i.type==='f');
+  const sum=a=>a.reduce((s,i)=>s+i.amt,0);
+  let h='<div class="sum">'+
+    '<button class="tile p" data-f="p"><div class="k">🅿️ 停車費</div><div class="v">'+money(sum(P))+'</div><div class="c">未繳 '+P.length+' 筆</div></button>'+
+    '<button class="tile f" data-f="f"><div class="k">🚨 罰鍰</div><div class="v">'+money(sum(F))+'</div><div class="c">未繳 '+F.length+' 筆</div></button>'+
+    (un.length?'<div class="total"><span>合計應繳</span><b>'+money(sum(un))+'</b></div>':'<div class="total clear">✓ 全部繳清，沒有欠費</div>')+
+    '</div>';
+  h+='<div class="seg" id="seg">'+[['all','全部'],['p','停車費'],['f','罰鍰'],['late','逾期']].map(([k,t])=>'<button data-f="'+k+'"'+(filter===k?' class="on"':'')+'>'+t+'</button>').join('')+'</div>';
+  const pass=i=>filter==='all'||(filter==='late'?(!S.paid[i.id]&&i.due<today):i.type===filter);
+  let any=false;
+  for(const car of S.cars){
+    const its=R.items.filter(i=>i.car===car.id&&pass(i)).sort((a,b)=>(!!S.paid[a.id]-!!S.paid[b.id])||a.due-b.due);
+    if(!its.length)continue;any=true;
+    h+='<div class="group"><h3><span>'+esc(car.plate)+'　'+esc(car.name||'')+'</span><span>'+its.length+' 筆</span></h3><div class="list">'+
+      its.map(i=>'<button class="item'+(S.paid[i.id]?' paid':'')+'" data-id="'+i.id+'"><div class="badge '+i.type+'">'+(i.type==='p'?'P':'!')+'</div>'+
+        '<div class="body"><div class="t">'+(i.type==='p'?esc(i.city)+' · '+esc(i.place):esc(i.what))+'</div>'+
+        '<div class="m">'+(i.type==='p'?'停車 '+md(new Date(i.at))+' '+hm(new Date(i.at))+' · '+i.hrs+' 小時':esc(i.city)+' · 違規 '+md(new Date(i.at)))+'</div></div>'+
+        '<div class="r"><div class="amt">'+money(i.amt)+'</div>'+dueTag(i)+'</div></button>').join('')+'</div></div>';
+  }
+  if(!any)h+='<div class="empty">這個分類沒有資料</div>';
+  $('result').innerHTML=h;
+}
+$('result').onclick=e=>{
+  const f=e.target.closest('[data-f]');if(f){filter=filter===f.dataset.f&&f.classList.contains('tile')?'all':f.dataset.f;renderResult();return}
+  const it=e.target.closest('.item');if(it)openItem(it.dataset.id);
+};
+
+function barcodeSVG(code){
+  let x=0,bars='';const r=rng(code);
+  while(x<300){const w=1+Math.floor(r()*3);if(r()>.45)bars+='<rect x="'+x+'" y="0" width="'+w+'" height="56"/>';x+=w+1}
+  return'<svg viewBox="0 0 300 56" preserveAspectRatio="none">'+bars+'</svg>';
+}
+function openItem(id){
+  const i=R.items.find(x=>x.id===id),car=S.cars.find(c=>c.id===i.car),paid=!!S.paid[id];
+  const at=new Date(i.at),due=new Date(i.due);
+  const rows=i.type==='p'?[['車號',car.plate],['縣市',i.city],['地點',i.place],['停車時間',at.getFullYear()+'/'+md(at)+' '+hm(at)+'（'+i.hrs+' 小時）'],['單號',i.no],['繳費期限',due.getFullYear()+'/'+md(due)]]
+    :[['車號',car.plate],['違規事項',i.what],['地點',i.city+' '+i.place],['違規時間',at.getFullYear()+'/'+md(at)+' '+hm(at)],['單號',i.no],['應到案日',due.getFullYear()+'/'+md(due)],['依據',i.law]];
+  sheet('<h2><span>'+(i.type==='p'?'🅿️ 停車費明細':'🚨 罰鍰明細')+'</span><button data-x>關閉</button></h2>'+
+    '<div class="bigamt">'+money(i.amt)+'</div><div style="text-align:center;margin:-6px 0 12px">'+dueTag(i)+'</div>'+
+    '<div class="kv">'+rows.map(([k,v])=>'<div><span>'+k+'</span><b>'+esc(v)+'</b></div>').join('')+'</div>'+
+    (paid?'':'<h3>超商繳費條碼（模擬）</h3><div class="barcode">'+barcodeSVG(i.no)+'<div>'+i.no+'</div></div>'+
+    '<div class="btns2"><button class="btn line" data-copy="'+i.no+'">複製單號</button><button class="btn line" data-pay>線上繳費</button></div>')+
+    '<button class="btn'+(paid?' gray':'')+'" data-paid="'+id+'">'+(paid?'改回未繳':'✓ 標記已繳')+'</button>');
+}
+
+function renderCars(){
+  $('carList').innerHTML=S.cars.length?S.cars.map(c=>'<div class="car"><div class="kind">'+ICON[c.kind]+'</div><div class="body"><span class="plate">'+esc(c.plate)+'</span>'+
+    '<div class="nm">'+(c.kind==='car'?'汽車':'機車')+(c.name?' · '+esc(c.name):'')+' · '+(c.fine?'查停車費＋罰鍰':'只查停車費')+'</div></div><button class="edit" data-id="'+c.id+'">編輯</button></div>').join('')
+    :'<div class="empty">還沒有車輛<br>按右上「＋ 新增」輸入車號</div>';
+}
+function carSheet(id){
+  const c=S.cars.find(x=>x.id===id)||{plate:'',kind:'car',name:'',fine:false};
+  sheet('<h2><span>'+(id?'編輯車輛':'新增車輛')+'</span><button data-x>取消</button></h2>'+
+    '<label class="lbl">車牌號碼</label><input class="field" id="fPlate" value="'+esc(c.plate)+'" placeholder="例如 ABC-1234" autocapitalize="characters" autocomplete="off">'+
+    '<label class="lbl">車種</label><div class="chips" id="fKind"><button class="chip'+(c.kind==='car'?' sel':'')+'" data-k="car">🚗 汽車</button><button class="chip'+(c.kind==='moto'?' sel':'')+'" data-k="moto">🛵 機車</button></div>'+
+    '<label class="lbl">暱稱（可不填）</label><input class="field" id="fName" value="'+esc(c.name||'')+'" placeholder="例如 上班機車">'+
+    '<label class="tgl"><span>也查交通罰鍰<small>需要車主身分證字號和生日</small></span><input type="checkbox" id="fFine"'+(c.fine?' checked':'')+'></label>'+
+    '<div id="fFineBox"'+(c.fine?'':' hidden')+'><label class="lbl">身分證字號</label><input class="field" placeholder="A123456789" autocomplete="off">'+
+    '<label class="lbl">出生日期</label><input class="field" type="date"></div>'+
+    '<button class="btn" id="fSave">儲存</button>'+(id?'<button class="btn gray" id="fDel" style="color:var(--danger)">刪除這輛車</button>':''));
+  let kind=c.kind;
+  $('fKind').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;kind=b.dataset.k;[...$('fKind').children].forEach(x=>x.classList.toggle('sel',x===b))};
+  $('fFine').onchange=e=>$('fFineBox').hidden=!e.target.checked;
+  $('fSave').onclick=()=>{
+    const plate=$('fPlate').value.trim().toUpperCase();
+    if(!/^[A-Z0-9]{2,4}-?[A-Z0-9]{2,4}$/.test(plate)){toast('車號格式像 ABC-1234');return}
+    const v={plate,kind,name:$('fName').value.trim(),fine:$('fFine').checked};
+    if(id)Object.assign(S.cars.find(x=>x.id===id),v);else S.cars.push({id:uid(),...v});
+    save();closeSheet();renderCars();renderPicks();toast('已儲存');
+  };
+  if(id)$('fDel').onclick=()=>{S.cars=S.cars.filter(x=>x.id!==id);save();closeSheet();renderCars();renderPicks();toast('已刪除')};
+}
+$('carNew').onclick=()=>carSheet(null);
+$('carList').onclick=e=>{const b=e.target.closest('.edit');if(b)carSheet(b.dataset.id)};
+
+function renderHist(){
+  if(!S.hist.length){$('hisList').innerHTML='<div class="empty">還沒有查詢紀錄</div>';return}
+  const g={};S.hist.forEach(h=>{const d=new Date(h.at);(g[d.getFullYear()+'/'+md(d)]=g[d.getFullYear()+'/'+md(d)]||[]).push(h)});
+  $('hisList').innerHTML=Object.entries(g).map(([d,hs])=>'<div class="group"><h3><span>'+d+'</span></h3><div class="list">'+
+    hs.map(h=>'<div class="hist"><div class="body"><div class="t">'+hm(new Date(h.at))+'　'+esc(h.cars.join('、'))+'</div><div class="m">'+(h.n?'未繳 '+h.n+' 筆':'全部繳清')+'</div></div><b style="color:'+(h.n?'var(--danger)':'var(--ok)')+'">'+money(h.amt)+'</b></div>').join('')+'</div></div>').join('');
+}
+function renderBadge(){
+  let n=0;
+  if(S.remind&&R)n=R.items.filter(i=>!S.paid[i.id]&&(i.due-today)/864e5<=3).length;
+  $('qN').hidden=!n;$('qN').textContent=n;
+}
+
+/* ---- 分頁 ---- */
+document.getElementById('tabs').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  [...$('tabs').children].forEach(x=>x.classList.toggle('on',x===b));
+  ['q','car','his'].forEach(t=>$('v-'+t).hidden=t!==b.dataset.tab);
+  if(b.dataset.tab==='car')renderCars();if(b.dataset.tab==='his')renderHist();
+  scrollTo(0,0);
+};
+
+/* ---- 底部視窗 ---- */
+function sheet(html){$('sheet').innerHTML=html;$('mask').hidden=false}
+function closeSheet(){$('mask').hidden=true}
+$('mask').onclick=e=>{
+  if(e.target===$('mask')||e.target.closest('[data-x]')){closeSheet();return}
+  const p=e.target.closest('[data-paid]');
+  if(p){const id=p.dataset.paid;if(S.paid[id])delete S.paid[id];else S.paid[id]=1;save();closeSheet();renderResult();renderBadge();toast(S.paid[id]?'已標記為已繳':'已改回未繳');return}
+  const c=e.target.closest('[data-copy]');
+  if(c){try{navigator.clipboard.writeText(c.dataset.copy).then(()=>toast('已複製單號'),()=>toast('單號：'+c.dataset.copy))}catch(_){toast('單號：'+c.dataset.copy)}return}
+  if(e.target.closest('[data-pay]')){toast('設計稿：這裡會開啟縣市的線上繳費頁');return}
+};
+$('menuBtn').onclick=()=>{
+  sheet('<h2><span>選單</span><button data-x>關閉</button></h2><div class="menu">'+
+    '<label class="tgl"><span>⏰ 到期提醒<small>繳費期限前 3 天在分頁列顯示紅色數字</small></span><input type="checkbox" id="mRem"'+(S.remind?' checked':'')+'></label>'+
+    '<button class="btn" id="mTheme">🌓 白底／黑底切換</button>'+
+    '<button class="btn" id="mHelp">❓ 使用說明</button>'+
+    '<button class="btn" id="mReset">🧹 清除所有資料</button>'+
+    '</div><p class="small" style="text-align:center;margin-top:14px">停車費小幫手 '+APP_VER+'</p>');
+  $('mRem').onchange=e=>{S.remind=e.target.checked;save();renderBadge()};
+  $('mTheme').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem(KEY+'-theme',r.dataset.theme)}catch(_){}};
+  $('mHelp').onclick=()=>sheet('<h2><span>使用說明</span><button data-x>關閉</button></h2><div class="help">'+HELP.map(t=>'<p>'+esc(t)+'</p>').join('')+'</div>');
+  $('mReset').onclick=()=>{try{localStorage.removeItem(KEY)}catch(_){}location.reload()};
+};
+
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1800)}
+try{const th=localStorage.getItem(KEY+'-theme');if(th)document.documentElement.dataset.theme=th}catch(_){}
+renderPicks();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+</body></html>
