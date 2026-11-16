@@ -12,4 +12,4 @@
 
 ## 停車費小幫手
 
-另一個獨立的 App，放在 `parking/` 資料夾：https://king22killer-dot.github.io/-/parking/ （用 Safari 開啟 → 分享 → 加入主畫面）。一鍵查詢汽機車停車費與交通罰鍰，可以只選要查的縣市。目前是介面設計稿，查詢結果為模擬資料。
+另一個獨立的 App，放在 `parking/` 資料夾：https://king22killer-dot.github.io/-/parking/ （用 Safari 開啟 → 分享 → 加入主畫面）。一鍵查詢汽機車停車費與交通罰鍰，可以只選要查的縣市。按「一鍵查詢」會打開各縣市官方查詢網頁（車號自動複製），查到的欠費記下來後 App 幫你算總額、提醒繳費期限。

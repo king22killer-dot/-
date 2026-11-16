@@ -188,13 +188,31 @@ main{max-width:620px;margin:0 auto;padding:10px 16px calc(84px + env(safe-area-i
 .tgl span{flex:1}
 .tgl small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
 .tgl input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+/* 查詢清單 */
+.runHead{display:flex;align-items:center;justify-content:space-between;padding-top:6px;font-size:17px}
+.chkHead{display:flex;align-items:center;gap:8px;margin:10px 0 2px}
+.chkHead .sp{flex:1}
+.mini{border:1px solid var(--hair);background:var(--surface);border-radius:8px;padding:6px 8px;font-size:13px;flex:none;color:var(--fg)}
+.mini.add{color:var(--danger)}
+.crow{display:flex;align-items:center;gap:6px;padding:8px 0;border-top:1px solid var(--hair)}
+.crow .dot2{width:22px;height:22px;border-radius:50%;border:2px solid var(--chipline);flex:none;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff}
+.crow.ok .dot2{background:var(--ok);border-color:var(--ok)}
+.crow.has .dot2{background:var(--danger);border-color:var(--danger)}
+.crow.open .dot2{border-color:var(--accent)}
+.crow .nm{flex:1;min-width:0;font-size:15px;line-height:1.3}
+.crow .nm small{display:block;font-size:11px;color:var(--muted)}
+.crow a.open{background:var(--accent);color:#fff;border-radius:8px;padding:6px 10px;font-size:14px;text-decoration:none;white-space:nowrap;flex:none}
+.runFoot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--hair);padding:10px 0 6px;font-size:14px;color:var(--muted)}
+.urls div{align-items:center}
+.urls span{width:70px;font-size:14px}
+.urls .field{padding:7px 8px;font-size:14px}
 .barcode{background:#fff;border-radius:12px;padding:14px 12px 8px;text-align:center;color:#111;margin-top:6px}
 .barcode svg{width:100%;height:56px;display:block}
 .barcode div{font:13px/1.6 Menlo,monospace;letter-spacing:1px}
 .help p{margin:6px 0;line-height:1.65;font-size:15px}
 .small{font-size:13px;color:var(--muted);line-height:1.5}
 #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(0,0,0,.8);
-  color:#fff;padding:9px 16px;border-radius:20px;font-size:15px;z-index:50;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+  color:#fff;padding:9px 16px;border-radius:20px;font-size:15px;z-index:50;opacity:0;transition:opacity .25s;pointer-events:none;width:max-content;max-width:calc(100vw - 32px);text-align:center;line-height:1.4}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){.spin,.big.busy svg{animation:none}#toast,.big{transition:none}}
 </style>
@@ -202,7 +220,7 @@ main{max-width:620px;margin:0 auto;padding:10px 16px calc(84px + env(safe-area-i
 <body>
 <header><div class="side"></div><h1>停車費小幫手</h1><button class="menu-btn" id="menuBtn">選單</button></header>
 <main>
-  <div class="sample"><span>介面設計稿：查詢結果是模擬資料，不是真實帳單。</span></div>
+  <div class="sample"><span>按「一鍵查詢」會打開各縣市官方查詢網頁（車號自動複製）；查到的欠費記下來，App 幫你算總額、提醒期限。</span></div>
 
   <!-- 查詢 -->
   <section class="view" id="v-q">
@@ -210,12 +228,12 @@ main{max-width:620px;margin:0 auto;padding:10px 16px calc(84px + env(safe-area-i
     <div class="cityCard">
       <div class="ch"><b>🅿️ 停車費要查哪裡？</b><span id="verN"></span></div>
       <div class="chips" id="cityRow"></div>
-      <label class="fineT"><input type="checkbox" id="fineOn"><span>也查交通罰鍰 <small>（全國一起查，1 次驗證）</small></span></label>
+      <label class="fineT"><input type="checkbox" id="fineOn"><span>也查交通罰鍰 <small>（監理服務網，全國一起查）</small></span></label>
     </div>
     <div class="hero">
       <button class="big" id="goBtn" aria-label="一鍵查詢">
         <svg viewBox="0 0 48 48"><circle cx="21" cy="21" r="13"/><path d="M31 31l10 10"/></svg>
-        <b>一鍵查詢</b><small id="goSub">停車費＋罰鍰</small>
+        <b>一鍵查詢</b><small id="goSub"></small>
       </button>
       <div class="last num" id="lastTxt"></div>
     </div>
@@ -227,7 +245,7 @@ main{max-width:620px;margin:0 auto;padding:10px 16px calc(84px + env(safe-area-i
   <section class="view" id="v-car" hidden>
     <div class="panel-head"><h2>我的車輛</h2><button class="newbtn" id="carNew">＋ 新增</button></div>
     <div class="list" id="carList"></div>
-    <p class="note">停車費只要車號就能查。罰鍰（交通違規罰單）要另外填身分證字號和生日，資料只存在這支手機。</p>
+    <p class="note">停車費到各縣市網頁用車號查；罰鍰到監理服務網查。資料只存在這支手機。</p>
   </section>
 
   <!-- 紀錄 -->
@@ -246,19 +264,23 @@ main{max-width:620px;margin:0 auto;padding:10px 16px calc(84px + env(safe-area-i
 <div id="toast"></div>
 
 <script>
-const APP_VER='v2（2026-11-16）';
+const APP_VER='v3（2026-11-16）';
 const KEY='parking-helper-v1';
 const HELP=[
-  '【選縣市】「停車費要查哪裡？」點縣市來選或取消，只查有去停車的縣市就好。每個縣市大約要輸入 1 次驗證碼，選越少、要輸入的驗證碼越少；右上會顯示這次大約要幾次。按「更多縣市」可以選其他縣市，選過的下次會記住。',
-  '【一鍵查詢】按中間的大圓鍵，會一次查完選好的縣市停車費；有勾「也查交通罰鍰」會順便查罰鍰（全國一起查）。最上面可以只選一輛車查。',
-  '【看結果】上方兩格是停車費和罰鍰的未繳筆數與金額，下面依車輛列出每一筆。紅色「已逾期」要盡快繳，橘色是快到期。',
-  '【單筆明細】點任一筆可以看地點、時間、繳費期限，並顯示超商繳費條碼；繳完按「標記已繳」，下次就不會再算進總額。',
-  '【我的車輛】在「車輛」頁新增車號，選汽車或機車。要查罰鍰的車再填身分證字號和生日。',
+  '【怎麼查】App 不會自己抓帳單：按「一鍵查詢」會列出要查的網頁清單，點「開啟」就打開該縣市的官方查詢網頁（車號會先自動複製好），貼上車號、輸入驗證碼就能查。',
+  '【查完回來】回到 App，在那一列按「沒欠」打勾；有欠費就按「＋記一筆」填金額和繳費期限。全部查完按「完成查詢」，會留一筆查詢紀錄。',
+  '【選縣市】「停車費要查哪裡？」點縣市來選或取消，只查有去停車的縣市就好，要開的網頁越少越快。按「更多縣市」可以選其他縣市，選過的下次會記住。最上面可以只選一輛車查。',
+  '【查詢網址】每個縣市預設會用 Google 搜尋「○○ 路邊停車費查詢」，第一次請點進官方網站。之後到 選單 →「各縣市查詢網址」把官方網址貼上，下次就直接打開官方網頁。罰鍰預設開監理服務網。',
+  '【看欠費】記下來的欠費會整理在下面：停車費、罰鍰各自的未繳筆數和金額，以及合計應繳。紅色「已逾期」要盡快繳，橘色是快到期。',
+  '【單筆明細】點任一筆可以看內容、打開繳費網頁、複製單號、修改或刪除；繳完按「標記已繳」，就不會再算進總額。',
+  '【我的車輛】在「車輛」頁新增車號，選汽車或機車，並選這輛車要不要查罰鍰。',
   '【到期提醒】選單 →「到期提醒」打開後，繳費期限前 3 天會在分頁列顯示紅色數字。',
-  '【查詢紀錄】每次查詢都會留一筆，可以看當時未繳多少。'
+  '【資料】所有資料只存在這支手機的瀏覽器裡。'
 ];
 const CITIES=['臺北市','新北市','桃園市','臺中市','臺南市','高雄市','基隆市','新竹市','新竹縣','苗栗縣','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣'];
 const COMMON=CITIES.slice(0,6);
+const FINE='監理服務網';
+const DEF_URL={[FINE]:'https://www.mvdis.gov.tw/'};
 let showMore=false;
 const ICON={
   car:'<svg viewBox="0 0 24 24"><path d="M3 16v-4l2.2-5.2A2 2 0 0 1 7 5.5h10a2 2 0 0 1 1.8 1.3L21 12v4"/><path d="M2 12h20v5H2zM5 17v2M19 17v2"/></svg>',
@@ -268,74 +290,60 @@ const ICON={
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const money=n=>'$'+n.toLocaleString('en-US');
+const money=n=>'$'+Number(n||0).toLocaleString('en-US');
 const md=d=>(d.getMonth()+1)+'/'+d.getDate();
 const hm=d=>pad(d.getHours())+':'+pad(d.getMinutes());
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 let today=new Date();today.setHours(0,0,0,0);
-const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
-const dayOf=d=>{const x=new Date(d);x.setHours(0,0,0,0);return +x};
 
 let S=null;
 try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
-if(!S||!Array.isArray(S.cars))S={
-  cars:[{id:'c1',plate:'ABC-1234',kind:'car',name:'家裡的車',fine:true},{id:'c2',plate:'MNO-5678',kind:'moto',name:'上班機車',fine:true}],
-  cities:['臺北市','新北市'],fineOn:true,remind:true,paid:{},hist:[],pick:'all'};
+if(!S||!Array.isArray(S.cars))S={cars:[],cities:['臺北市','新北市'],fineOn:true,remind:true,hist:[],pick:'all'};
 if(S.fineOn===undefined)S.fineOn=true;
+S.items=S.items||[];S.urls=S.urls||{};S.hist=S.hist||[];delete S.paid;
+if(S.v!==3){S.hist=[];S.v=3}   // 舊版的模擬查詢紀錄不保留
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
-let R=null; // 最近一次查詢結果
+let RUN=null;   // 這次查詢的清單狀態
 let filter='all';
 
-/* ---- 模擬資料（依車號固定產生，方便看設計） ---- */
-function rng(seed){let h=0;for(const c of seed)h=(h*31+c.charCodeAt(0))>>>0;return()=>{h=(h*1103515245+12345)>>>0;return h/4294967296}}
-const STREETS={'臺北市':['信義路五段','忠孝東路四段','民生東路三段'],'新北市':['中山路二段','文化路一段','中正路'],'桃園市':['中正路','復興路','經國路'],
-  '臺中市':['台灣大道二段','公益路','文心路三段'],'臺南市':['中華東路','府前路一段','海安路二段'],'高雄市':['中山一路','五福三路','博愛二路'],'基隆市':['愛三路','信二路'],'新竹市':['中華路二段','光復路一段']};
-const FINES=[['違規停車（禁止臨時停車處所）',900],['未依規定停放機車停車格',600],['行車速度超過規定之最高速限',1600],['不依標誌標線指示行駛',900],['闖紅燈',2700]];
-function mockFor(car){
-  const r=rng(car.plate),out=[];
-  const cities=S.cities;
-  const np=cities.length?1+Math.floor(r()*3):0;
-  for(let i=0;i<np;i++){
-    const city=cities[Math.floor(r()*cities.length)],sts=STREETS[city]||['中正路','中山路','民生路'],st=sts[Math.floor(r()*sts.length)];
-    const ago=Math.floor(r()*20)+1,at=addDays(today,-ago);at.setHours(8+Math.floor(r()*12),Math.floor(r()*60));
-    const hrs=1+Math.floor(r()*4),amt=car.kind==='moto'?20*hrs:(30+Math.floor(r()*3)*10)*hrs;
-    out.push({id:car.plate+'-p'+i,type:'p',car:car.id,city,place:st,at:+at,due:dayOf(addDays(at,15)),amt,hrs,no:'P'+Math.floor(1e9+r()*9e9)});
-  }
-  if(S.fineOn&&car.fine&&r()>.25){
-    const f=FINES[Math.floor(r()*(car.kind==='moto'?2:FINES.length))],city=COMMON[Math.floor(r()*COMMON.length)];
-    const at=addDays(today,-(10+Math.floor(r()*25)));at.setHours(7+Math.floor(r()*14),Math.floor(r()*60));
-    out.push({id:car.plate+'-f',type:'f',car:car.id,city,place:STREETS[city][0],at:+at,due:dayOf(addDays(at,30)),amt:f[1],what:f[0],no:'A'+Math.floor(1e8+r()*9e8),law:'道路交通管理處罰條例'});
-  }
-  return out;
+function cityURL(c){return S.urls[c]||DEF_URL[c]||'https://www.google.com/search?q='+encodeURIComponent(c+' 路邊停車費查詢 官方網站')}
+function copyText(t,msg){
+  try{navigator.clipboard.writeText(t).then(()=>toast(msg||'已複製'),()=>toast('請手動輸入：'+t))}catch(_){toast('請手動輸入：'+t)}
 }
 function dueTag(it){
-  if(S.paid[it.id])return'<span class="tag ok">已繳</span>';
+  if(it.paid)return'<span class="tag ok">已繳</span>';
+  if(!it.due)return'<span class="tag ok">未填期限</span>';
   const d=Math.round((it.due-today)/864e5);
   if(d<0)return'<span class="tag late">已逾期 '+(-d)+' 天</span>';
   if(d<=3)return'<span class="tag soon">'+(d?'剩 '+d+' 天':'今天到期')+'</span>';
   return'<span class="tag ok">期限 '+md(new Date(it.due))+'</span>';
 }
 
-/* ---- 畫面 ---- */
+/* ---- 查詢頁 ---- */
+function targetCars(){return S.pick==='all'?S.cars:S.cars.filter(c=>c.id===S.pick)}
+function pagesFor(cars){return cars.reduce((n,c)=>n+S.cities.length+(S.fineOn&&c.fine?1:0),0)}
 function renderPicks(){
-  const list=[{id:'all',plate:'全部車輛',kind:'all'}].concat(S.cars);
   if(!S.cars.find(c=>c.id===S.pick))S.pick='all';
-  $('picks').innerHTML=list.map(c=>'<button class="pick'+(S.pick===c.id?' sel':'')+'" data-id="'+c.id+'">'+ICON[c.kind]+'<b>'+esc(c.plate)+'</b></button>').join('');
-  const n=S.pick==='all'?S.cars.length:1;
-  const fine=S.fineOn&&targetCars().some(c=>c.fine);
-  $('goSub').textContent=n+' 輛 · '+(S.cities.length===1?S.cities[0]:S.cities.length?S.cities.length+' 縣市':'只查罰鍰')+(fine&&S.cities.length?'＋罰鍰':'');
-  renderCities();
+  const list=[{id:'all',plate:'全部車輛',kind:'all'}].concat(S.cars);
+  $('picks').innerHTML=S.cars.length?list.map(c=>'<button class="pick'+(S.pick===c.id?' sel':'')+'" data-id="'+c.id+'">'+ICON[c.kind]+'<b>'+esc(c.plate)+'</b></button>').join('')
+    :'<button class="pick" data-gocar>'+ICON.car+'<b>＋ 先新增車號</b></button>';
+  const cars=targetCars(),fine=S.fineOn&&cars.some(c=>c.fine);
+  $('goSub').textContent=cars.length+' 輛 · '+(S.cities.length===1?S.cities[0]:S.cities.length?S.cities.length+' 縣市':'只查罰鍰')+(fine&&S.cities.length?'＋罰鍰':'');
   const h=S.hist[0];
-  $('lastTxt').textContent=h?'上次查詢：'+md(new Date(h.at))+' '+hm(new Date(h.at)):'還沒查過，按上面的圓鍵開始';
+  $('lastTxt').textContent=h?'上次查詢：'+md(new Date(h.at))+' '+hm(new Date(h.at)):'按上面的圓鍵開始查詢';
+  renderCities();
 }
-$('picks').onclick=e=>{const b=e.target.closest('.pick');if(!b)return;S.pick=b.dataset.id;save();renderPicks()};
-
+$('picks').onclick=e=>{
+  if(e.target.closest('[data-gocar]')){$('tabs').querySelector('[data-tab=car]').click();carSheet(null);return}
+  const b=e.target.closest('.pick');if(!b)return;S.pick=b.dataset.id;save();renderPicks();
+};
 function renderCities(){
   const list=showMore?CITIES:CITIES.filter(c=>COMMON.includes(c)||S.cities.includes(c));
   $('cityRow').innerHTML=list.map(c=>'<button class="chip'+(S.cities.includes(c)?' sel':'')+'" data-c="'+c+'">'+c+'</button>').join('')+
     '<button class="chip more" data-more>'+(showMore?'收起 ▴':'更多縣市 ▾')+'</button>';
-  const v=S.cities.length+(S.fineOn&&targetCars().some(c=>c.fine)?1:0);
-  $('verN').innerHTML=v?'約需輸入 <b>'+v+'</b> 次驗證碼':'請至少選一項';
+  const v=pagesFor(targetCars());
+  $('verN').innerHTML=v?'要開 <b>'+v+'</b> 個網頁':(S.cars.length?'請至少選一項':'');
   $('fineOn').checked=S.fineOn;
 }
 $('cityRow').onclick=e=>{
@@ -346,99 +354,141 @@ $('cityRow').onclick=e=>{
   save();renderPicks();
 };
 $('fineOn').onchange=e=>{S.fineOn=e.target.checked;save();renderPicks()};
-function targetCars(){return S.pick==='all'?S.cars:S.cars.filter(c=>c.id===S.pick)}
-$('goBtn').onclick=async()=>{
+
+$('goBtn').onclick=()=>{
   const cars=targetCars();
   if(!cars.length){toast('請先到「車輛」新增車號');return}
-  const doFine=S.fineOn&&cars.some(c=>c.fine);
-  if(!S.cities.length&&!doFine){toast('請至少選一個縣市');return}
-  const btn=$('goBtn');btn.classList.add('busy');$('result').innerHTML='';
-  const steps=S.cities.map(c=>c+' 停車費').concat(doFine?['交通違規罰鍰（全國）']:[]);
-  const p=$('prog');p.hidden=false;
-  p.innerHTML=steps.map((s,i)=>'<div class="prow" id="ps'+i+'"><div class="spin"></div><span>'+s+'</span><i>驗證中</i></div>').join('');
-  p.scrollIntoView({behavior:'smooth',block:'center'});
-  for(let i=0;i<steps.length;i++){
-    await new Promise(r=>setTimeout(r,170+Math.random()*180));
-    const row=$('ps'+i);row.firstChild.outerHTML='<div class="okc"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-5"/></svg></div>';
-    row.querySelector('i').textContent='完成';
+  if(!pagesFor(cars)){toast('請至少選一個縣市');return}
+  RUN={at:Date.now(),cars:cars.map(c=>c.id),cities:S.cities.slice(),fine:S.fineOn,rows:{}};
+  renderRun();
+  $('prog').scrollIntoView({behavior:'smooth',block:'start'});
+};
+function runRows(car){
+  const r=RUN.cities.map(c=>({key:car.id+'|'+c,place:c,label:c+' 停車費'}));
+  if(RUN.fine&&car.fine)r.push({key:car.id+'|'+FINE,place:FINE,label:'交通罰鍰（監理服務網）'});
+  return r;
+}
+function renderRun(){
+  const p=$('prog');
+  if(!RUN){p.hidden=true;return}
+  let total=0,done=0,h='<div class="runHead"><b>查詢清單</b><button class="mini" data-cancel>取消</button></div>'+
+    '<p class="small" style="margin:2px 0 6px">點「開啟」會先複製車號，到官方網頁貼上、輸入驗證碼。查完回來按「沒欠」或「＋記一筆」。</p>';
+  for(const id of RUN.cars){
+    const car=S.cars.find(c=>c.id===id);if(!car)continue;
+    h+='<div class="chkHead"><span class="plate">'+esc(car.plate)+'</span><span class="sp"></span><button class="mini" data-copy="'+esc(car.plate)+'">複製車號</button></div>';
+    for(const r of runRows(car)){
+      const st=RUN.rows[r.key];total++;if(st==='ok'||st==='has')done++;
+      const n=S.items.filter(i=>i.runKey===r.key&&i.runAt===RUN.at).length;
+      h+='<div class="crow'+(st?' '+st:'')+'"><span class="dot2">'+(st==='ok'?'✓':st==='has'?n:'')+'</span>'+
+        '<span class="nm">'+esc(r.label)+'<small>'+(st==='ok'?'沒有欠費':st==='has'?'記了 '+n+' 筆':st==='open'?'已開啟':'')+'</small></span>'+
+        '<a class="open" href="'+esc(cityURL(r.place))+'" target="_blank" rel="noopener" data-key="'+r.key+'" data-plate="'+esc(car.plate)+'">開啟 ↗</a>'+
+        '<button class="mini" data-ok="'+r.key+'">沒欠</button><button class="mini add" data-add="'+r.key+'">＋記</button></div>';
+    }
   }
-  await new Promise(r=>setTimeout(r,250));
-  p.hidden=true;btn.classList.remove('busy');
-  R={at:Date.now(),items:cars.flatMap(mockFor)};
-  const un=R.items.filter(i=>!S.paid[i.id]);
-  S.hist.unshift({id:uid(),at:R.at,cars:cars.map(c=>c.plate),n:un.length,amt:un.reduce((a,i)=>a+i.amt,0)});
-  S.hist=S.hist.slice(0,30);save();
-  renderPicks();renderResult();renderBadge();
-  document.querySelector('.sum').scrollIntoView({behavior:'smooth',block:'start'});
-  toast(un.length?'查到 '+un.length+' 筆未繳':'全部繳清，沒有欠費 🎉');
+  h+='<div class="runFoot"><span>已查 '+done+' / '+total+'</span><button class="newbtn" data-done>完成查詢</button></div>';
+  p.innerHTML=h;p.hidden=false;
+}
+$('prog').onclick=e=>{
+  const a=e.target.closest('a.open');
+  if(a){const k=a.dataset.key;if(!RUN.rows[k])RUN.rows[k]='open';copyText(a.dataset.plate,'已複製車號 '+a.dataset.plate+'，到網頁貼上即可');setTimeout(renderRun,300);return}
+  const c=e.target.closest('[data-copy]');if(c){copyText(c.dataset.copy,'已複製車號 '+c.dataset.copy);return}
+  const ok=e.target.closest('[data-ok]');if(ok){const k=ok.dataset.ok;RUN.rows[k]=RUN.rows[k]==='ok'?'':'ok';renderRun();return}
+  const ad=e.target.closest('[data-add]');
+  if(ad){const [car,place]=ad.dataset.add.split('|');itemSheet(null,{car,place,type:place===FINE?'f':'p',runKey:ad.dataset.add});return}
+  if(e.target.closest('[data-cancel]')){RUN=null;renderRun();return}
+  if(e.target.closest('[data-done]')){
+    const cars=RUN.cars.map(id=>S.cars.find(c=>c.id===id)).filter(Boolean);
+    const un=S.items.filter(i=>!i.paid&&RUN.cars.includes(i.car));
+    S.hist.unshift({id:uid(),at:Date.now(),cars:cars.map(c=>c.plate),pages:Object.values(RUN.rows).filter(v=>v==='ok'||v==='has').length,n:un.length,amt:un.reduce((a,i)=>a+(+i.amt||0),0)});
+    S.hist=S.hist.slice(0,50);save();RUN=null;renderRun();renderPicks();renderResult();
+    toast(un.length?'目前未繳 '+un.length+' 筆，共 '+money(un.reduce((a,i)=>a+(+i.amt||0),0)):'全部繳清，沒有欠費 🎉');
+  }
 };
 
+/* ---- 欠費清單 ---- */
 function renderResult(){
-  if(!R){$('result').innerHTML='';return}
-  const un=R.items.filter(i=>!S.paid[i.id]);
+  if(!S.items.length){$('result').innerHTML='';renderBadge();return}
+  const un=S.items.filter(i=>!i.paid);
   const P=un.filter(i=>i.type==='p'),F=un.filter(i=>i.type==='f');
-  const sum=a=>a.reduce((s,i)=>s+i.amt,0);
+  const sum=a=>a.reduce((s,i)=>s+(+i.amt||0),0);
   let h='<div class="sum">'+
     '<button class="tile p" data-f="p"><div class="k">🅿️ 停車費</div><div class="v">'+money(sum(P))+'</div><div class="c">未繳 '+P.length+' 筆</div></button>'+
     '<button class="tile f" data-f="f"><div class="k">🚨 罰鍰</div><div class="v">'+money(sum(F))+'</div><div class="c">未繳 '+F.length+' 筆</div></button>'+
     (un.length?'<div class="total"><span>合計應繳</span><b>'+money(sum(un))+'</b></div>':'<div class="total clear">✓ 全部繳清，沒有欠費</div>')+
     '</div>';
-  h+='<div class="seg" id="seg">'+[['all','全部'],['p','停車費'],['f','罰鍰'],['late','逾期']].map(([k,t])=>'<button data-f="'+k+'"'+(filter===k?' class="on"':'')+'>'+t+'</button>').join('')+'</div>';
-  const pass=i=>filter==='all'||(filter==='late'?(!S.paid[i.id]&&i.due<today):i.type===filter);
+  h+='<div class="seg">'+[['all','全部'],['p','停車費'],['f','罰鍰'],['late','逾期']].map(([k,t])=>'<button data-f="'+k+'"'+(filter===k?' class="on"':'')+'>'+t+'</button>').join('')+'</div>';
+  const pass=i=>filter==='all'||(filter==='late'?(!i.paid&&i.due&&i.due<today):i.type===filter);
   let any=false;
   for(const car of S.cars){
-    const its=R.items.filter(i=>i.car===car.id&&pass(i)).sort((a,b)=>(!!S.paid[a.id]-!!S.paid[b.id])||a.due-b.due);
+    const its=S.items.filter(i=>i.car===car.id&&pass(i)).sort((a,b)=>(a.paid-b.paid)||((a.due||9e15)-(b.due||9e15)));
     if(!its.length)continue;any=true;
     h+='<div class="group"><h3><span>'+esc(car.plate)+'　'+esc(car.name||'')+'</span><span>'+its.length+' 筆</span></h3><div class="list">'+
-      its.map(i=>'<button class="item'+(S.paid[i.id]?' paid':'')+'" data-id="'+i.id+'"><div class="badge '+i.type+'">'+(i.type==='p'?'P':'!')+'</div>'+
-        '<div class="body"><div class="t">'+(i.type==='p'?esc(i.city)+' · '+esc(i.place):esc(i.what))+'</div>'+
-        '<div class="m">'+(i.type==='p'?'停車 '+md(new Date(i.at))+' '+hm(new Date(i.at))+' · '+i.hrs+' 小時':esc(i.city)+' · 違規 '+md(new Date(i.at)))+'</div></div>'+
+      its.map(i=>'<button class="item'+(i.paid?' paid':'')+'" data-id="'+i.id+'"><div class="badge '+i.type+'">'+(i.type==='p'?'P':'!')+'</div>'+
+        '<div class="body"><div class="t">'+esc(i.type==='p'?i.place+(i.note?' · '+i.note:''):(i.note||'交通罰鍰'))+'</div>'+
+        '<div class="m">'+(i.type==='p'?'停車費':'罰鍰')+' · 記錄於 '+md(new Date(i.at))+(i.no?' · '+esc(i.no):'')+'</div></div>'+
         '<div class="r"><div class="amt">'+money(i.amt)+'</div>'+dueTag(i)+'</div></button>').join('')+'</div></div>';
   }
   if(!any)h+='<div class="empty">這個分類沒有資料</div>';
-  $('result').innerHTML=h;
+  $('result').innerHTML=h;renderBadge();
 }
 $('result').onclick=e=>{
   const f=e.target.closest('[data-f]');if(f){filter=filter===f.dataset.f&&f.classList.contains('tile')?'all':f.dataset.f;renderResult();return}
   const it=e.target.closest('.item');if(it)openItem(it.dataset.id);
 };
-
-function barcodeSVG(code){
-  let x=0,bars='';const r=rng(code);
-  while(x<300){const w=1+Math.floor(r()*3);if(r()>.45)bars+='<rect x="'+x+'" y="0" width="'+w+'" height="56"/>';x+=w+1}
-  return'<svg viewBox="0 0 300 56" preserveAspectRatio="none">'+bars+'</svg>';
-}
 function openItem(id){
-  const i=R.items.find(x=>x.id===id),car=S.cars.find(c=>c.id===i.car),paid=!!S.paid[id];
-  const at=new Date(i.at),due=new Date(i.due);
-  const rows=i.type==='p'?[['車號',car.plate],['縣市',i.city],['地點',i.place],['停車時間',at.getFullYear()+'/'+md(at)+' '+hm(at)+'（'+i.hrs+' 小時）'],['單號',i.no],['繳費期限',due.getFullYear()+'/'+md(due)]]
-    :[['車號',car.plate],['違規事項',i.what],['地點',i.city+' '+i.place],['違規時間',at.getFullYear()+'/'+md(at)+' '+hm(at)],['單號',i.no],['應到案日',due.getFullYear()+'/'+md(due)],['依據',i.law]];
+  const i=S.items.find(x=>x.id===id),car=S.cars.find(c=>c.id===i.car)||{plate:'（已刪除的車）'};
+  const rows=[['車號',car.plate],['類型',i.type==='p'?'停車費':'交通罰鍰'],['縣市／來源',i.place],[i.type==='p'?'地點／備註':'違規事項',i.note||'—'],
+    ['繳費期限',i.due?ymd(new Date(i.due)).replace(/-/g,'/'):'未填'],['單號',i.no||'—'],['記錄時間',ymd(new Date(i.at)).replace(/-/g,'/')+' '+hm(new Date(i.at))]];
   sheet('<h2><span>'+(i.type==='p'?'🅿️ 停車費明細':'🚨 罰鍰明細')+'</span><button data-x>關閉</button></h2>'+
     '<div class="bigamt">'+money(i.amt)+'</div><div style="text-align:center;margin:-6px 0 12px">'+dueTag(i)+'</div>'+
     '<div class="kv">'+rows.map(([k,v])=>'<div><span>'+k+'</span><b>'+esc(v)+'</b></div>').join('')+'</div>'+
-    (paid?'':'<h3>超商繳費條碼（模擬）</h3><div class="barcode">'+barcodeSVG(i.no)+'<div>'+i.no+'</div></div>'+
-    '<div class="btns2"><button class="btn line" data-copy="'+i.no+'">複製單號</button><button class="btn line" data-pay>線上繳費</button></div>')+
-    '<button class="btn'+(paid?' gray':'')+'" data-paid="'+id+'">'+(paid?'改回未繳':'✓ 標記已繳')+'</button>');
+    '<div class="btns2"><a class="btn line" style="text-align:center;text-decoration:none" href="'+esc(cityURL(i.place))+'" target="_blank" rel="noopener" data-plate="'+esc(car.plate)+'">開啟繳費網頁 ↗</a>'+
+    (i.no?'<button class="btn line" data-copy="'+esc(i.no)+'">複製單號</button>':'')+'</div>'+
+    '<div class="btns2"><button class="btn line" data-edit="'+id+'">修改</button><button class="btn'+(i.paid?' gray':'')+'" data-paid="'+id+'">'+(i.paid?'改回未繳':'✓ 標記已繳')+'</button></div>');
+}
+function itemSheet(id,preset){
+  const it=S.items.find(x=>x.id===id)||Object.assign({type:'p',amt:'',due:0,note:'',no:''},preset);
+  const car=S.cars.find(c=>c.id===it.car)||{plate:''};
+  sheet('<h2><span>'+(id?'修改欠費':'記一筆欠費')+'</span><button data-x>取消</button></h2>'+
+    '<p class="small">'+esc(car.plate)+' · '+esc(it.place)+'</p>'+
+    '<label class="lbl">類型</label><div class="chips" id="iType"><button class="chip'+(it.type==='p'?' sel':'')+'" data-t="p">🅿️ 停車費</button><button class="chip'+(it.type==='f'?' sel':'')+'" data-t="f">🚨 罰鍰</button></div>'+
+    '<label class="lbl">金額（元）</label><input class="field" id="iAmt" type="number" inputmode="numeric" min="0" value="'+esc(it.amt)+'" placeholder="例如 60">'+
+    '<label class="lbl">繳費期限（可不填）</label><input class="field" id="iDue" type="date" value="'+(it.due?ymd(new Date(it.due)):'')+'">'+
+    '<label class="lbl">地點／違規事項（可不填）</label><input class="field" id="iNote" value="'+esc(it.note||'')+'" placeholder="例如 信義路五段">'+
+    '<label class="lbl">單號（可不填）</label><input class="field" id="iNo" value="'+esc(it.no||'')+'" autocomplete="off" autocapitalize="characters">'+
+    '<button class="btn" id="iSave">儲存</button>'+(id?'<button class="btn gray" id="iDel" style="color:var(--danger)">刪除這筆</button>':''));
+  let type=it.type;
+  $('iType').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;type=b.dataset.t;[...$('iType').children].forEach(x=>x.classList.toggle('sel',x===b))};
+  $('iSave').onclick=()=>{
+    const amt=parseInt($('iAmt').value,10);
+    if(!(amt>0)){toast('請填金額');return}
+    const dv=$('iDue').value,due=dv?+new Date(dv+'T00:00:00'):0;
+    const v={type,amt,due,note:$('iNote').value.trim(),no:$('iNo').value.trim().toUpperCase()};
+    if(id)Object.assign(it,v);
+    else{S.items.push(Object.assign({id:uid(),car:it.car,place:it.place,at:Date.now(),paid:false,runKey:it.runKey,runAt:RUN&&RUN.at},v));
+      if(RUN&&it.runKey)RUN.rows[it.runKey]='has';}
+    save();closeSheet();renderRun();renderResult();toast('已記下');
+  };
+  if(id)$('iDel').onclick=()=>{S.items=S.items.filter(x=>x.id!==id);save();closeSheet();renderRun();renderResult();toast('已刪除')};
+  setTimeout(()=>{if(!id)$('iAmt').focus()},50);
 }
 
+/* ---- 車輛 ---- */
 function renderCars(){
   $('carList').innerHTML=S.cars.length?S.cars.map(c=>'<div class="car"><div class="kind">'+ICON[c.kind]+'</div><div class="body"><span class="plate">'+esc(c.plate)+'</span>'+
     '<div class="nm">'+(c.kind==='car'?'汽車':'機車')+(c.name?' · '+esc(c.name):'')+' · '+(c.fine?'查停車費＋罰鍰':'只查停車費')+'</div></div><button class="edit" data-id="'+c.id+'">編輯</button></div>').join('')
     :'<div class="empty">還沒有車輛<br>按右上「＋ 新增」輸入車號</div>';
 }
 function carSheet(id){
-  const c=S.cars.find(x=>x.id===id)||{plate:'',kind:'car',name:'',fine:false};
+  const c=S.cars.find(x=>x.id===id)||{plate:'',kind:'car',name:'',fine:true};
   sheet('<h2><span>'+(id?'編輯車輛':'新增車輛')+'</span><button data-x>取消</button></h2>'+
     '<label class="lbl">車牌號碼</label><input class="field" id="fPlate" value="'+esc(c.plate)+'" placeholder="例如 ABC-1234" autocapitalize="characters" autocomplete="off">'+
     '<label class="lbl">車種</label><div class="chips" id="fKind"><button class="chip'+(c.kind==='car'?' sel':'')+'" data-k="car">🚗 汽車</button><button class="chip'+(c.kind==='moto'?' sel':'')+'" data-k="moto">🛵 機車</button></div>'+
     '<label class="lbl">暱稱（可不填）</label><input class="field" id="fName" value="'+esc(c.name||'')+'" placeholder="例如 上班機車">'+
-    '<label class="tgl"><span>也查交通罰鍰<small>需要車主身分證字號和生日</small></span><input type="checkbox" id="fFine"'+(c.fine?' checked':'')+'></label>'+
-    '<div id="fFineBox"'+(c.fine?'':' hidden')+'><label class="lbl">身分證字號</label><input class="field" placeholder="A123456789" autocomplete="off">'+
-    '<label class="lbl">出生日期</label><input class="field" type="date"></div>'+
+    '<label class="tgl"><span>也查交通罰鍰<small>會打開監理服務網，在那邊輸入車號或身分證字號查詢</small></span><input type="checkbox" id="fFine"'+(c.fine?' checked':'')+'></label>'+
     '<button class="btn" id="fSave">儲存</button>'+(id?'<button class="btn gray" id="fDel" style="color:var(--danger)">刪除這輛車</button>':''));
   let kind=c.kind;
   $('fKind').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;kind=b.dataset.k;[...$('fKind').children].forEach(x=>x.classList.toggle('sel',x===b))};
-  $('fFine').onchange=e=>$('fFineBox').hidden=!e.target.checked;
   $('fSave').onclick=()=>{
     const plate=$('fPlate').value.trim().toUpperCase();
     if(!/^[A-Z0-9]{2,4}-?[A-Z0-9]{2,4}$/.test(plate)){toast('車號格式像 ABC-1234');return}
@@ -446,25 +496,26 @@ function carSheet(id){
     if(id)Object.assign(S.cars.find(x=>x.id===id),v);else S.cars.push({id:uid(),...v});
     save();closeSheet();renderCars();renderPicks();toast('已儲存');
   };
-  if(id)$('fDel').onclick=()=>{S.cars=S.cars.filter(x=>x.id!==id);save();closeSheet();renderCars();renderPicks();toast('已刪除')};
+  if(id)$('fDel').onclick=()=>{S.cars=S.cars.filter(x=>x.id!==id);save();closeSheet();renderCars();renderPicks();renderResult();toast('已刪除')};
 }
 $('carNew').onclick=()=>carSheet(null);
 $('carList').onclick=e=>{const b=e.target.closest('.edit');if(b)carSheet(b.dataset.id)};
 
+/* ---- 紀錄 ---- */
 function renderHist(){
-  if(!S.hist.length){$('hisList').innerHTML='<div class="empty">還沒有查詢紀錄</div>';return}
-  const g={};S.hist.forEach(h=>{const d=new Date(h.at);(g[d.getFullYear()+'/'+md(d)]=g[d.getFullYear()+'/'+md(d)]||[]).push(h)});
+  if(!S.hist.length){$('hisList').innerHTML='<div class="empty">還沒有查詢紀錄<br>查完按「完成查詢」就會留一筆</div>';return}
+  const g={};S.hist.forEach(h=>{const d=new Date(h.at),k=d.getFullYear()+'/'+md(d);(g[k]=g[k]||[]).push(h)});
   $('hisList').innerHTML=Object.entries(g).map(([d,hs])=>'<div class="group"><h3><span>'+d+'</span></h3><div class="list">'+
-    hs.map(h=>'<div class="hist"><div class="body"><div class="t">'+hm(new Date(h.at))+'　'+esc(h.cars.join('、'))+'</div><div class="m">'+(h.n?'未繳 '+h.n+' 筆':'全部繳清')+'</div></div><b style="color:'+(h.n?'var(--danger)':'var(--ok)')+'">'+money(h.amt)+'</b></div>').join('')+'</div></div>').join('');
+    hs.map(h=>'<div class="hist"><div class="body"><div class="t">'+hm(new Date(h.at))+'　'+esc(h.cars.join('、'))+'</div><div class="m">查了 '+h.pages+' 個網頁 · '+(h.n?'未繳 '+h.n+' 筆':'全部繳清')+'</div></div><b style="color:'+(h.n?'var(--danger)':'var(--ok)')+'">'+money(h.amt)+'</b></div>').join('')+'</div></div>').join('');
 }
 function renderBadge(){
   let n=0;
-  if(S.remind&&R)n=R.items.filter(i=>!S.paid[i.id]&&(i.due-today)/864e5<=3).length;
+  if(S.remind)n=S.items.filter(i=>!i.paid&&i.due&&(i.due-today)/864e5<=3).length;
   $('qN').hidden=!n;$('qN').textContent=n;
 }
 
 /* ---- 分頁 ---- */
-document.getElementById('tabs').onclick=e=>{
+$('tabs').onclick=e=>{
   const b=e.target.closest('button');if(!b)return;
   [...$('tabs').children].forEach(x=>x.classList.toggle('on',x===b));
   ['q','car','his'].forEach(t=>$('v-'+t).hidden=t!==b.dataset.tab);
@@ -477,28 +528,41 @@ function sheet(html){$('sheet').innerHTML=html;$('mask').hidden=false}
 function closeSheet(){$('mask').hidden=true}
 $('mask').onclick=e=>{
   if(e.target===$('mask')||e.target.closest('[data-x]')){closeSheet();return}
+  const a=e.target.closest('a[data-plate]');if(a){copyText(a.dataset.plate,'已複製車號 '+a.dataset.plate);return}
   const p=e.target.closest('[data-paid]');
-  if(p){const id=p.dataset.paid;if(S.paid[id])delete S.paid[id];else S.paid[id]=1;save();closeSheet();renderResult();renderBadge();toast(S.paid[id]?'已標記為已繳':'已改回未繳');return}
-  const c=e.target.closest('[data-copy]');
-  if(c){try{navigator.clipboard.writeText(c.dataset.copy).then(()=>toast('已複製單號'),()=>toast('單號：'+c.dataset.copy))}catch(_){toast('單號：'+c.dataset.copy)}return}
-  if(e.target.closest('[data-pay]')){toast('設計稿：這裡會開啟縣市的線上繳費頁');return}
+  if(p){const i=S.items.find(x=>x.id===p.dataset.paid);i.paid=!i.paid;save();closeSheet();renderResult();toast(i.paid?'已標記為已繳':'已改回未繳');return}
+  const ed=e.target.closest('[data-edit]');if(ed){itemSheet(ed.dataset.edit);return}
+  const c=e.target.closest('[data-copy]');if(c){copyText(c.dataset.copy,'已複製單號');return}
 };
+function urlSheet(){
+  sheet('<h2><span>各縣市查詢網址</span><button data-x>完成</button></h2>'+
+    '<p class="small">沒填的縣市會用 Google 搜尋「○○ 路邊停車費查詢」。找到官方查詢網頁後，從 Safari 網址列複製網址貼到這裡，下次「開啟」就直接打開官方網頁。</p>'+
+    '<div class="kv urls">'+[FINE].concat(CITIES).map(c=>'<div><span>'+c+'</span><input class="field" data-u="'+c+'" type="url" inputmode="url" autocapitalize="off" autocomplete="off" value="'+esc(S.urls[c]||DEF_URL[c]||'')+'" placeholder="Google 搜尋"></div>').join('')+'</div>');
+  $('sheet').querySelector('.urls').onchange=e=>{
+    const k=e.target.dataset.u;if(!k)return;let v=e.target.value.trim();
+    if(v&&!/^https?:\/\//i.test(v))v='https://'+v;
+    if(v&&v!==DEF_URL[k])S.urls[k]=v;else delete S.urls[k];
+    e.target.value=v||DEF_URL[k]||'';save();renderRun();toast(v?'已儲存 '+k+' 網址':'已改回 Google 搜尋');
+  };
+}
 $('menuBtn').onclick=()=>{
   sheet('<h2><span>選單</span><button data-x>關閉</button></h2><div class="menu">'+
+    '<button class="btn" id="mUrl">🔗 各縣市查詢網址</button>'+
     '<label class="tgl"><span>⏰ 到期提醒<small>繳費期限前 3 天在分頁列顯示紅色數字</small></span><input type="checkbox" id="mRem"'+(S.remind?' checked':'')+'></label>'+
+    '<button class="btn" id="mPaid">🧾 清除已繳的欠費紀錄</button>'+
     '<button class="btn" id="mTheme">🌓 白底／黑底切換</button>'+
     '<button class="btn" id="mHelp">❓ 使用說明</button>'+
-    '<button class="btn" id="mReset">🧹 清除所有資料</button>'+
     '</div><p class="small" style="text-align:center;margin-top:14px">停車費小幫手 '+APP_VER+'</p>');
+  $('mUrl').onclick=urlSheet;
   $('mRem').onchange=e=>{S.remind=e.target.checked;save();renderBadge()};
+  $('mPaid').onclick=()=>{const n=S.items.filter(i=>i.paid).length;S.items=S.items.filter(i=>!i.paid);save();renderResult();closeSheet();toast('已清除 '+n+' 筆已繳紀錄')};
   $('mTheme').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem(KEY+'-theme',r.dataset.theme)}catch(_){}};
   $('mHelp').onclick=()=>sheet('<h2><span>使用說明</span><button data-x>關閉</button></h2><div class="help">'+HELP.map(t=>'<p>'+esc(t)+'</p>').join('')+'</div>');
-  $('mReset').onclick=()=>{try{localStorage.removeItem(KEY)}catch(_){}location.reload()};
 };
 
-let tt;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1800)}
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2200)}
 try{const th=localStorage.getItem(KEY+'-theme');if(th)document.documentElement.dataset.theme=th}catch(_){}
-renderPicks();
+save();renderPicks();renderResult();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 </script>
 </body></html>

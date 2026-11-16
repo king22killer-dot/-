@@ -14,7 +14,7 @@ iPhone 用的夜班抄表網頁 App。純靜態網站，沒有建置步驟，部
 - `docs/`：Firebase 設定說明、共用設定備份。
 - `tank/`：另一個獨立 App「槽車入料小幫手」（網址 https://king22killer-dot.github.io/-/tank/），把槽車入料照片排成 Word／PDF 報告。有自己的 `index.html`、`manifest.json`、`sw.js`（`CACHE` 名稱 `tank-vN`，跟著 `tank/index.html` 的 `APP_VER` 更新）、圖示。各 SW 的快取清除只刪自己前綴（`waste-inspection-`／`tank-`／`report-`／`parking-`）的快取，不要改回刪全部。
 - `report/`：另一個獨立 App「晨報小幫手」（網址 https://king22killer-dot.github.io/-/report/），用相機掃描 A4 交接記錄（自動找紙張邊緣、透視校正、增強），輸出成「日期＋檔名」的 PDF。結構同 `tank/`，`sw.js` 的 `CACHE` 名稱 `report-vN`，跟著 `report/index.html` 的 `APP_VER` 更新，只刪 `report-` 前綴的快取。
-- `parking/`：另一個獨立 App「停車費小幫手」（網址 https://king22killer-dot.github.io/-/parking/），一鍵查詢汽機車停車費與交通罰鍰，可選要查的縣市以減少驗證碼次數；介面沿用「班表小幫手」風格。目前查詢結果是模擬資料（尚未串接各縣市／監理站）。結構同 `tank/`，`sw.js` 的 `CACHE` 名稱 `parking-vN`，跟著 `parking/index.html` 的 `APP_VER` 更新，只刪 `parking-` 前綴的快取。
+- `parking/`：另一個獨立 App「停車費小幫手」（網址 https://king22killer-dot.github.io/-/parking/），一鍵查詢汽機車停車費與交通罰鍰，可選要查的縣市以減少驗證碼次數；介面沿用「班表小幫手」風格。按「一鍵查詢」會列出要開的官方網頁清單（車號自動複製），使用者查完自己記下欠費，App 算總額與提醒期限；各縣市網址預設用 Google 搜尋，可在選單「各縣市查詢網址」改成官方網址（`S.urls`），罰鍰預設開監理服務網。結構同 `tank/`，`sw.js` 的 `CACHE` 名稱 `parking-vN`，跟著 `parking/index.html` 的 `APP_VER` 更新，只刪 `parking-` 前綴的快取。
 
 ## 每次修改的規則
 1. 改 `index.html` 裡的 `const APP_VER='vNN（YYYY-MM-DD）';`，版本號加 1。
